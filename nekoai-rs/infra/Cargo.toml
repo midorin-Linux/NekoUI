@@ -1,0 +1,29 @@
+[package]
+name = "nekoai-infra"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+web-ui = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio-stream"]
+
+[dependencies]
+anyhow.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
+dashmap.workspace = true
+dotenvy.workspace = true
+nekoai-domain.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+
+# web-ui feature dependencies
+axum = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+tower-http = { workspace = true, optional = true }
+tokio-stream = { workspace = true, optional = true }

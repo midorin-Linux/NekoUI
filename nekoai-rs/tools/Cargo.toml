@@ -1,0 +1,26 @@
+[package]
+name = "nekoai-tools"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+futures.workspace = true
+nekoai-config.workspace = true
+nekoai-domain.workspace = true
+rig.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serenity.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tokio-retry.workspace = true
+chrono.workspace = true
+reqwest.workspace = true
+scraper.workspace = true
+tokio.workspace = true
+url.workspace = true
+uuid.workspace = true
+tempfile.workspace = true
+rmcp.workspace = true

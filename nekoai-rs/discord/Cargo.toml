@@ -1,0 +1,17 @@
+[package]
+name = "nekoai-discord"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+nekoai-agent.workspace = true
+nekoai-config.workspace = true
+nekoai-tools.workspace = true
+anyhow.workspace = true
+colored.workspace = true
+indicatif.workspace = true
+nekoai-domain.workspace = true
+poise.workspace = true
+serenity.workspace = true
+tracing.workspace = true
