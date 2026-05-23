@@ -376,23 +376,33 @@ async fn handle_websocket(
                                 let now = chrono::Utc::now().to_rfc3339();
                                 tokio::spawn(async move {
                                     // Store user message
-                                    store.add_message(&cid, MessageResponse {
-                                        id: Uuid::new_v4().to_string(),
-                                        role: "user".to_string(),
-                                        content: content.clone(),
-                                        created_at: now.clone(),
-                                    }).await;
+                                    store
+                                        .add_message(
+                                            &cid,
+                                            MessageResponse {
+                                                id: Uuid::new_v4().to_string(),
+                                                role: "user".to_string(),
+                                                content: content.clone(),
+                                                created_at: now.clone(),
+                                            },
+                                        )
+                                        .await;
 
                                     match agent.submit(sk, None, content).await {
                                         Ok(response) => {
                                             // Store assistant response
                                             let resp_id = Uuid::new_v4().to_string();
-                                            store.add_message(&cid, MessageResponse {
-                                                id: resp_id,
-                                                role: "assistant".to_string(),
-                                                content: response.clone(),
-                                                created_at: chrono::Utc::now().to_rfc3339(),
-                                            }).await;
+                                            store
+                                                .add_message(
+                                                    &cid,
+                                                    MessageResponse {
+                                                        id: resp_id,
+                                                        role: "assistant".to_string(),
+                                                        content: response.clone(),
+                                                        created_at: chrono::Utc::now().to_rfc3339(),
+                                                    },
+                                                )
+                                                .await;
 
                                             let done_msg = serde_json::json!({
                                                 "type": "done",
