@@ -1,5 +1,5 @@
 {
-  "name": "nekoai-gui",
+  "name": "nekoui-gui",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,19 +12,19 @@
     "@radix-ui/themes": "^3.3.0",
     "@react-router/node": "7.15.1",
     "@react-router/serve": "7.15.1",
-    "isbot": "^5.1.36",
+    "isbot": "^5.1.40",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router": "7.15.1"
   },
   "devDependencies": {
     "@react-router/dev": "7.15.1",
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/node": "^25",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.13"
+    "vite": "^8.0.14"
   }
 }
