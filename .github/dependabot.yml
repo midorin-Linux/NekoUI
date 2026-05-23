@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "cargo"
-    directory: "nekoai-rs"
+    directory: "nekoui-rs"
     schedule:
       interval: "weekly"
 
@@ -16,6 +16,6 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "bun"
-    directory: "nekoai-gui"
+    directory: "nekoui-gui"
     schedule:
       interval: "weekly"

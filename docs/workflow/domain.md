@@ -1,48 +1,51 @@
-# `nekoai-domain` クレートのワークフロー
+# `nekoui-domain` クレート ワークフロー
 
 ## 役割
 
-`nekoai-domain` はクレート間で共有するドメイン型を定義します。セッション識別と呼び出し元コンテキストの型を提供します。
+`nekoui-domain` は、クレート間で共有するドメイン型を定義します。主にセッション識別と呼び出し元コンテキストを提供します。
 
 ## 主な構成
 
-- `agent/session.rs` (16行): `SessionKind` enum, `SessionKey` struct
-- `agent/runtime.rs` (24行): `CallerContext` struct, `tokio::task_local!` 機構
-- `agent/mod.rs` (2行): モジュール宣言
-- `lib.rs` (1行): `pub mod agent;`
+- `agent/session.rs`: `SessionKind` と `SessionKey`
+- `agent/runtime.rs`: `CallerContext` と `tokio::task_local!` によるコンテキスト伝搬
+- `agent/mod.rs`: モジュール宣言
+- `lib.rs`: `pub mod agent;`
 
 ## 型定義
 
 ### `SessionKind`
 
-Discord 上の会話コンテキストを 3 種類に正規化:
-- `GuildChannel`: サーバー内通常チャンネル
+Discord 上の会話コンテキストを 3 種類に正規化します。
+
+- `GuildChannel`: サーバー上の通常チャンネル
 - `Thread`: スレッド
 - `DirectMessage`: DM
 
-`Clone + Debug + Eq + PartialEq + Hash + Serialize` を導出。
+`Clone`、`Debug`、`Eq`、`PartialEq`、`Hash`、`Serialize` を実装します。
 
 ### `SessionKey`
 
-セッション識別子:
+セッションを一意に識別する型です。
+
 - `guild_id: Option<GuildId>`
 - `channel_id: ChannelId`
 - `thread_id: Option<ChannelId>`
 - `kind: SessionKind`
 
-`Eq + Hash` を持つため、セッションマップのキーとして利用可能。
+`Eq` と `Hash` を持つため、セッションマップのキーとして利用できます。
 
 ### `CallerContext`
 
-呼び出し元の識別情報:
+呼び出し元の識別情報です。
+
 - `user_id: Option<u64>`
 - `guild_id: Option<u64>`
 
-`Clone + Debug + Default` を導出。
+`Clone`、`Debug`、`Default` を実装します。
 
-## CallerContext 伝搬機構
+## `CallerContext` 伝搬機構
 
-`tokio::task_local!` を使用した暗黙的なコンテキスト伝搬:
+`tokio::task_local!` を使って、暗黙的に呼び出し元情報を引き回します。
 
 ```rust
 tokio::task_local! {
@@ -50,19 +53,19 @@ tokio::task_local! {
 }
 ```
 
-- `with_caller_context(context, future)`: future を指定された CallerContext でスコープ実行
-- `current_caller_context()`: 現在のタスクから CallerContext を取得（未設定時はデフォルト）
+- `with_caller_context(context, future)`: 指定した `CallerContext` で future を実行
+- `current_caller_context()`: 現在のタスクから `CallerContext` を取得。未設定時はデフォルト値を返す
 
-これにより、明示的な引数なしで任意の非同期タスクから呼び出し元情報を参照可能。
+これにより、明示的な引数なしで非同期タスクから呼び出し元情報を参照できます。
 
 ## 利用ワークフロー
 
-1. `nekoai-discord` が受信イベントから `SessionKey` を生成
-2. `nekoai-agent` が `SessionKey` ごとにセッションを取得/更新、`CallerContext` で呼び出し元を追跡
-3. `nekoai-memory` が `SessionKey` を使って検索フィルタを構築
+1. `nekoui-discord` が受信イベントから `SessionKey` を生成
+2. `nekoui-agent` が `SessionKey` ごとにセッションを管理し、`CallerContext` で呼び出し元を追跡
+3. `nekoui-memory` が `SessionKey` を使って検索フィルタを構築
 
 ## 設計上の位置づけ
 
-- 外部 I/O 依存ロジックは持たない
-- ビジネス境界の共通言語を提供する
-- 上位層（CLI/Discord）と下位層（Agent/Memory）の接着点になる
+- 外部 I/O 依存のロジックは持たない
+- ビジネスロジックの共通言語を提供する
+- CLI / Discord と、Agent / Memory をつなぐ接着点になる

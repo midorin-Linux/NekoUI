@@ -1,7 +1,7 @@
 services:
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: nekoai-qdrant
+    container_name: nekoui-qdrant
     ports:
       - "6333:6333"
       - "6334:6334"
@@ -11,12 +11,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: nekoai-redis
+    container_name: nekoui-redis
     restart: unless-stopped
 
   searxng:
     image: searxng/searxng:latest
-    container_name: nekoai-searxng
+    container_name: nekoui-searxng
     depends_on:
       - redis
     ports:

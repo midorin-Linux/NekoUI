@@ -18,7 +18,7 @@ env:
 
 defaults:
   run:
-    working-directory: nekoai-rs
+    working-directory: nekoui-rs
 
 jobs:
   fmt:
@@ -94,14 +94,14 @@ jobs:
 
       - name: Cargo audit
         run: cargo audit
-        working-directory: nekoai-rs
+        working-directory: nekoui-rs
 
   gui-lint:
-    name: gui lint & build (nekoai-gui)
+    name: gui lint & build (nekoui-gui)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: nekoai-gui
+        working-directory: nekoui-gui
     steps:
       - uses: actions/checkout@v6
 

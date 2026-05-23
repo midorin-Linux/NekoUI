@@ -1,4 +1,4 @@
-# NekoAI
+# nekoui
 ## Quick start
 ```bash
 neko start
