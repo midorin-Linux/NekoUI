@@ -43,7 +43,7 @@ dotenvy = "0.15.7"
 futures = "0.3.32"
 indicatif = "0.18.4"
 qdrant-client = "1.18.0"
-reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
+reqwest = { version = "0.13.4", default-features = false, features = ["json", "rustls"] }
 rig = { package = "rig-core", version = "0.37.0", features = ["image", "derive"] }
 rmcp = { version = "1.7.0", features = [
     "client",
