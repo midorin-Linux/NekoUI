@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use derive_builder::Builder;
+use nekoui_config::Config;
 use nekoui_telemetry::{State, print_log};
 use rig::providers::openai;
 use tracing::warn;
-use nekoui_config::Config;
+
 use crate::provider::OpenAICompatibleAdapter;
 
 #[derive(Builder)]

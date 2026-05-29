@@ -4,8 +4,8 @@ use std::process::ExitCode;
 
 use anyhow::{Result, bail};
 use clap::Command;
-use tracing::{error, warn};
 use nekoui_agent::runtime::Agent;
+use tracing::{error, warn};
 
 fn cli() -> Command {
     Command::new("neko")
