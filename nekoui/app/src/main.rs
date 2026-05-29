@@ -5,6 +5,7 @@ use std::process::ExitCode;
 use anyhow::{Result, bail};
 use clap::Command;
 use tracing::{error, warn};
+use nekoui_agent::runtime::Agent;
 
 fn cli() -> Command {
     Command::new("neko")
@@ -32,7 +33,9 @@ async fn run() -> Result<()> {
 
     match matches.subcommand() {
         Some(("start", sub_matches)) => {
-            let _start_command = commands::start::StartCommand::new(sub_matches).await?;
+            let start_command = commands::start::StartCommand::new(sub_matches).await?;
+
+            let runtime = Agent::builder(start_command.config)?.build()?;
             Ok(())
         }
         _ => {

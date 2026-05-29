@@ -5,3 +5,11 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+nekoui-config.workspace = true
+nekoui-telemetry.workspace = true
+
+anyhow.workspace = true
+derive_builder.workspace = true
+rig.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
