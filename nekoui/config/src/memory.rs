@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use crate::SecretKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,7 +39,7 @@ impl Default for Qdrant {
             base_url: default_base_url(),
             api_key: default_api_key(),
             mid_term_collection: default_mid_term_collection(),
-            long_term_collection: default_long_term_collection()
+            long_term_collection: default_long_term_collection(),
         }
     }
 }
@@ -92,7 +93,7 @@ impl Default for MemoryConfig {
             long_term_top_k: default_long_term_top_k(),
             mid_term_retention_days: default_mid_term_retention_days(),
             long_term_extraction_interval: default_long_term_extraction_interval(),
-            qdrant: Qdrant::default()
+            qdrant: Qdrant::default(),
         }
     }
 }

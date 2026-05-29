@@ -1,7 +1,7 @@
-use super::SecretKey;
-
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+use super::SecretKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TextModelProvider {
@@ -23,5 +23,5 @@ pub struct EmbedModelProvider {
 pub struct ProviderConfig {
     pub agent: TextModelProvider,
     pub summarizer: TextModelProvider,
-    pub embedder: EmbedModelProvider
+    pub embedder: EmbedModelProvider,
 }

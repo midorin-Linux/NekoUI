@@ -1,6 +1,6 @@
-pub mod server;
-pub mod provider;
 pub mod memory;
+pub mod provider;
+pub mod server;
 pub mod tools;
 
 use std::fmt;
@@ -9,20 +9,18 @@ use anyhow::{Context, Result};
 use config::{Config as ConfigBuilder, File};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
+use server::ServerConfig;
 use tracing::{debug, info};
 use zeroize::Zeroizing;
 
-use server::ServerConfig;
-use crate::provider::ProviderConfig;
-use crate::memory::MemoryConfig;
-use crate::tools::ToolsConfig;
+use crate::{memory::MemoryConfig, provider::ProviderConfig, tools::ToolsConfig};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub server: ServerConfig,
     pub provider: ProviderConfig,
     pub memory: MemoryConfig,
-    pub tools: ToolsConfig
+    pub tools: ToolsConfig,
 }
 
 impl Config {

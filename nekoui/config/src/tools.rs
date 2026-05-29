@@ -32,7 +32,7 @@ pub struct ToolsConfig {
     pub web_search: bool,
 
     #[serde(default)]
-    pub searxng: Searxng
+    pub searxng: Searxng,
 }
 
 pub fn default_web_search() -> bool {
@@ -43,7 +43,7 @@ impl Default for ToolsConfig {
     fn default() -> Self {
         Self {
             web_search: default_web_search(),
-            searxng: Searxng::default()
+            searxng: Searxng::default(),
         }
     }
 }

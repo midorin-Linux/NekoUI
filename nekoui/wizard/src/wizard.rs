@@ -1,18 +1,17 @@
 use anyhow::Result;
-use nekoui_config::Config;
-use nekoui_config::memory::MemoryConfig;
-use nekoui_config::provider::{EmbedModelProvider, ProviderConfig, TextModelProvider};
-use nekoui_config::server::ServerConfig;
-use nekoui_config::tools::{Searxng, ToolsConfig};
-use nekoui_config::SecretKey;
+use nekoui_config::{
+    Config, SecretKey,
+    memory::MemoryConfig,
+    provider::{EmbedModelProvider, ProviderConfig, TextModelProvider},
+    server::ServerConfig,
+    tools::{Searxng, ToolsConfig},
+};
 
 pub fn run_wizard() -> Result<Config> {
     println!("The wizard is currently being prepared. Default values will be saved.");
 
     let config = Config {
-        server: ServerConfig {
-            bind_address: 3000,
-        },
+        server: ServerConfig { bind_address: 3000 },
         provider: ProviderConfig {
             agent: TextModelProvider {
                 api_key: SecretKey::new("".to_string()),
