@@ -5,7 +5,7 @@ help:
     just -l
 
 neko *args:
-    cargo run --bin nekoui-cli -- {{args}}
+    cargo run --bin app -- {{args}}
 
 fmt:
     cargo +nightly fmt --all

@@ -6,16 +6,11 @@
 version: 2
 updates:
   - package-ecosystem: "cargo"
-    directory: "nekoui-rs"
+    directory: "nekoui"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "github-actions"
     directory: ".github/workflows"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "bun"
-    directory: "nekoui-gui"
     schedule:
       interval: "weekly"

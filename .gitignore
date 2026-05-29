@@ -1,2 +1,6 @@
 .idea/
 .env
+
+config/*.yaml
+logs/
+nekoui.md
