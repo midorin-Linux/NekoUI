@@ -1,0 +1,10 @@
+[workspace]
+members = ["agent", "api-server","app", "config", "events", "inference", "memory", "telemetry", "tools"]
+resolver = "2"
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "Apache-2.0"
+
+[workspace.dependencies]
