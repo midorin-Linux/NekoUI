@@ -7,24 +7,24 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080c17;
-  --surface: #0c1220;
-  --surface2: #101828;
-  --surface3: #141e30;
-  --border: #1a2540;
-  --border-hi: #253660;
-  --text: #dde6f5;
-  --text-muted: #5d7599;
-  --text-dim: #2d3f5e;
+  --bg: #ffffff; /* White background */
+  --surface: #f8f9fa; /* Very light gray */
+  --surface2: #e9ecef; /* Light gray */
+  --surface3: #dee2e6; /* Slightly darker light gray */
+  --border: #ced4da; /* Light border */
+  --border-hi: #adb5bd; /* Slightly darker border */
+  --text: #212529; /* Dark text */
+  --text-muted: #495057; /* Muted dark text */
+  --text-dim: #6c757d; /* Dim dark text */
 
-  --get: #38bdf8;     --get-bg: rgba(56,189,248,0.07);  --get-b: rgba(56,189,248,0.2);
-  --post: #4ade80;    --post-bg: rgba(74,222,128,0.07); --post-b: rgba(74,222,128,0.2);
-  --patch: #fbbf24;   --patch-bg: rgba(251,191,36,0.07);--patch-b: rgba(251,191,36,0.2);
-  --delete: #f87171;  --delete-bg: rgba(248,113,113,0.07);--delete-b: rgba(248,113,113,0.2);
-  --sse: #c084fc;     --sse-bg: rgba(192,132,252,0.07); --sse-b: rgba(192,132,252,0.2);
+  --get: #0d6efd;     --get-bg: rgba(13,110,253,0.15);  --get-b: rgba(13,110,253,0.4);
+  --post: #198754;    --post-bg: rgba(25,135,84,0.15); --post-b: rgba(25,135,84,0.4);
+  --patch: #ffc107;   --patch-bg: rgba(255,193,7,0.15);--patch-b: rgba(255,193,7,0.4);
+  --delete: #dc3545;  --delete-bg: rgba(220,53,69,0.15);--delete-b: rgba(220,53,69,0.4);
+  --sse: #6f42c1;     --sse-bg: rgba(111,66,193,0.15); --sse-b: rgba(111,66,193,0.4);
 
-  --accent: #38bdf8;
-  --accent2: #818cf8;
+  --accent: #0d6efd;
+  --accent2: #6610f2;
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'Sora', sans-serif;
 }
@@ -44,8 +44,8 @@ body::before {
   position:fixed;
   inset:0;
   background-image:
-    linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
   background-size:48px 48px;
   pointer-events:none;
   z-index:0;
@@ -121,7 +121,7 @@ nav { padding:12px 0; flex:1; }
   transition:all .12s;
 }
 .nav-link:hover { color:var(--text); background:var(--surface2); border-left-color:var(--border-hi); }
-.nav-link.active { color:var(--accent); background:rgba(56,189,248,.07); border-left-color:var(--accent); }
+.nav-link.active { color:var(--accent); background:rgba(13,110,253,.07); border-left-color:var(--accent); }
 
 .nav-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
 .nav-count {
@@ -356,7 +356,7 @@ nav { padding:12px 0; flex:1; }
   align-items:center;
   font-family:var(--mono);
   font-size:12.5px;
-  color:#a8bee0;
+  color:var(--text); /* Changed from #a8bee0 to var(--text) */
   letter-spacing:-.01em;
 }
 .ep-path .p { color:var(--patch); }
@@ -388,15 +388,15 @@ nav { padding:12px 0; flex:1; }
   color:var(--text-muted);
   border:1px solid var(--border);
 }
-.tag.auth    { background:rgba(129,140,248,.1); color:#818cf8; border-color:rgba(129,140,248,.2); }
-.tag.stream  { background:rgba(192,132,252,.1); color:var(--sse); border-color:rgba(192,132,252,.2); }
-.tag.admin   { background:rgba(251,191,36,.1);  color:var(--patch); border-color:rgba(251,191,36,.2); }
-.tag.bulk    { background:rgba(248,113,113,.1); color:var(--delete); border-color:rgba(248,113,113,.2); }
-.tag.upload  { background:rgba(74,222,128,.1);  color:var(--post); border-color:rgba(74,222,128,.2); }
+.tag.auth    { background:rgba(102,16,242,.1); color:var(--accent2); border-color:rgba(102,16,242,.2); } /* Adjusted for new accent2 */
+.tag.stream  { background:rgba(111,66,193,.1); color:var(--sse); border-color:rgba(111,66,193,.2); } /* Adjusted for new sse */
+.tag.admin   { background:rgba(255,193,7,.1);  color:var(--patch); border-color:rgba(255,193,7,.2); } /* Adjusted for new patch */
+.tag.bulk    { background:rgba(220,53,69,.1); color:var(--delete); border-color:rgba(220,53,69,.2); } /* Adjusted for new delete */
+.tag.upload  { background:rgba(25,135,84,.1);  color:var(--post); border-color:rgba(25,135,84,.2); } /* Adjusted for new post */
 
 .note-box {
-  background:rgba(56,189,248,.04);
-  border:1px solid rgba(56,189,248,.14);
+  background:rgba(13,110,253,.04); /* Adjusted for new accent */
+  border:1px solid rgba(13,110,253,.14); /* Adjusted for new accent */
   border-left:3px solid var(--accent);
   border-radius:0 6px 6px 0;
   padding:11px 16px;
@@ -484,23 +484,23 @@ nav { padding:12px 0; flex:1; }
 
   <nav>
     <div class="nav-section-label">Core</div>
-    <a href="#auth" class="nav-link"><span class="nav-dot" style="background:#818cf8"></span>認証<span class="nav-count">6</span></a>
-    <a href="#sessions" class="nav-link"><span class="nav-dot" style="background:#38bdf8"></span>セッション<span class="nav-count">9</span></a>
-    <a href="#messages" class="nav-link"><span class="nav-dot" style="background:#4ade80"></span>メッセージ<span class="nav-count">12</span></a>
-    <a href="#attachments" class="nav-link"><span class="nav-dot" style="background:#fbbf24"></span>添付ファイル<span class="nav-count">4</span></a>
+    <a href="#auth" class="nav-link"><span class="nav-dot" style="background:#6610f2"></span>認証<span class="nav-count">6</span></a> <!-- Adjusted for new accent2 -->
+    <a href="#sessions" class="nav-link"><span class="nav-dot" style="background:#0d6efd"></span>セッション<span class="nav-count">9</span></a> <!-- Adjusted for new accent -->
+    <a href="#messages" class="nav-link"><span class="nav-dot" style="background:#198754"></span>メッセージ<span class="nav-count">12</span></a> <!-- Adjusted for new post -->
+    <a href="#attachments" class="nav-link"><span class="nav-dot" style="background:#ffc107"></span>添付ファイル<span class="nav-count">4</span></a> <!-- Adjusted for new patch -->
 
     <div class="nav-section-label" style="margin-top:8px">AI Provider</div>
-    <a href="#providers" class="nav-link"><span class="nav-dot" style="background:#f87171"></span>プロバイダー<span class="nav-count">7</span></a>
-    <a href="#models" class="nav-link"><span class="nav-dot" style="background:#fb923c"></span>モデル<span class="nav-count">9</span></a>
+    <a href="#providers" class="nav-link"><span class="nav-dot" style="background:#dc3545"></span>プロバイダー<span class="nav-count">7</span></a> <!-- Adjusted for new delete -->
+    <a href="#models" class="nav-link"><span class="nav-dot" style="background:#fd7e14"></span>モデル<span class="nav-count">9</span></a> <!-- New color for models -->
 
     <div class="nav-section-label" style="margin-top:8px">Organization</div>
-    <a href="#folders" class="nav-link"><span class="nav-dot" style="background:#a3e635"></span>フォルダ・タグ<span class="nav-count">8</span></a>
-    <a href="#presets" class="nav-link"><span class="nav-dot" style="background:#22d3ee"></span>プリセット<span class="nav-count">6</span></a>
+    <a href="#folders" class="nav-link"><span class="nav-dot" style="background:#28a745"></span>フォルダ・タグ<span class="nav-count">8</span></a> <!-- New color for folders -->
+    <a href="#presets" class="nav-link"><span class="nav-dot" style="background:#17a2b8"></span>プリセット<span class="nav-count">6</span></a> <!-- New color for presets -->
 
     <div class="nav-section-label" style="margin-top:8px">Config</div>
-    <a href="#settings" class="nav-link"><span class="nav-dot" style="background:#e879f9"></span>設定<span class="nav-count">12</span></a>
-    <a href="#search" class="nav-link"><span class="nav-dot" style="background:#60a5fa"></span>検索<span class="nav-count">3</span></a>
-    <a href="#system" class="nav-link"><span class="nav-dot" style="background:#94a3b8"></span>システム<span class="nav-count">4</span></a>
+    <a href="#settings" class="nav-link"><span class="nav-dot" style="background:#e83e8c"></span>設定<span class="nav-count">12</span></a> <!-- New color for settings -->
+    <a href="#search" class="nav-link"><span class="nav-dot" style="background:#6c757d"></span>検索<span class="nav-count">3</span></a> <!-- New color for search -->
+    <a href="#system" class="nav-link"><span class="nav-dot" style="background:#6f42c1"></span>システム<span class="nav-count">4</span></a> <!-- Adjusted for new sse -->
   </nav>
 
   <div class="sb-footer">
@@ -526,7 +526,7 @@ nav { padding:12px 0; flex:1; }
     <div class="page-meta">
       <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--post)"></span>REST JSON API</span>
       <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--sse)"></span>SSE Streaming</span>
-      <span class="meta-pill"><span class="meta-pill-dot" style="background:#818cf8"></span>JWT Bearer Auth</span>
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--accent2)"></span>JWT Bearer Auth</span> <!-- Adjusted for new accent2 -->
       <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--patch)"></span>Rate Limiting</span>
       <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--delete)"></span>Versioned: v1</span>
     </div>
