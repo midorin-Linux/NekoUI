@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chat Interface — API Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c17;
+  --surface: #0c1220;
+  --surface2: #101828;
+  --surface3: #141e30;
+  --border: #1a2540;
+  --border-hi: #253660;
+  --text: #dde6f5;
+  --text-muted: #5d7599;
+  --text-dim: #2d3f5e;
+
+  --get: #38bdf8;     --get-bg: rgba(56,189,248,0.07);  --get-b: rgba(56,189,248,0.2);
+  --post: #4ade80;    --post-bg: rgba(74,222,128,0.07); --post-b: rgba(74,222,128,0.2);
+  --patch: #fbbf24;   --patch-bg: rgba(251,191,36,0.07);--patch-b: rgba(251,191,36,0.2);
+  --delete: #f87171;  --delete-bg: rgba(248,113,113,0.07);--delete-b: rgba(248,113,113,0.2);
+  --sse: #c084fc;     --sse-bg: rgba(192,132,252,0.07); --sse-b: rgba(192,132,252,0.2);
+
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Sora', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.wrap { display:flex; min-height:100vh; position:relative; z-index:1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:256px;
+  flex-shrink:0;
+  background: var(--surface);
+  border-right:1px solid var(--border);
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+
+.sb-logo {
+  padding:24px 22px 20px;
+  border-bottom:1px solid var(--border);
+}
+.sb-eyebrow {
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--accent);
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.sb-title {
+  font-size:14px;
+  font-weight:700;
+  color:var(--text);
+  line-height:1.3;
+}
+.sb-base {
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-muted);
+  margin-top:5px;
+  padding:4px 8px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  display:inline-block;
+}
+
+nav { padding:12px 0; flex:1; }
+
+.nav-section-label {
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  padding:8px 22px 4px;
+}
+
+.nav-link {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 22px;
+  color:var(--text-muted);
+  text-decoration:none;
+  font-size:12.5px;
+  font-weight:500;
+  border-left:2px solid transparent;
+  transition:all .12s;
+}
+.nav-link:hover { color:var(--text); background:var(--surface2); border-left-color:var(--border-hi); }
+.nav-link.active { color:var(--accent); background:rgba(56,189,248,.07); border-left-color:var(--accent); }
+
+.nav-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+.nav-count {
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-dim);
+  background:var(--surface3);
+  padding:1px 6px;
+  border-radius:3px;
+}
+
+.sb-footer {
+  padding:16px 22px;
+  border-top:1px solid var(--border);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-dim);
+  line-height:1.8;
+}
+
+/* ── MAIN ── */
+.main { flex:1; min-width:0; padding:52px 56px; }
+
+.page-header { margin-bottom:52px; }
+.page-eyebrow {
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--accent);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.page-eyebrow::before {
+  content:'';
+  display:block;
+  width:24px;
+  height:1px;
+  background:var(--accent);
+}
+
+.page-title {
+  font-size:38px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.1;
+  margin-bottom:16px;
+}
+.page-title span { color:var(--accent); }
+
+.page-desc {
+  font-size:13.5px;
+  color:var(--text-muted);
+  max-width:680px;
+  line-height:1.75;
+  margin-bottom:24px;
+}
+
+.page-meta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:40px;
+}
+.meta-pill {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-muted);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  padding:5px 12px;
+  border-radius:4px;
+}
+.meta-pill-dot { width:5px;height:5px;border-radius:50%; }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  margin-bottom:52px;
+  padding-bottom:52px;
+  border-bottom:1px solid var(--border);
+}
+.stat-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px 20px;
+  transition:border-color .15s;
+}
+.stat-card:hover { border-color:var(--border-hi); }
+.stat-num {
+  font-family:var(--mono);
+  font-size:30px;
+  font-weight:600;
+  line-height:1;
+  margin-bottom:6px;
+}
+.stat-label {
+  font-size:11px;
+  color:var(--text-muted);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+/* ── LEGEND ── */
+.legend {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:48px;
+}
+.legend-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11.5px;
+  color:var(--text-muted);
+}
+
+/* ── METHOD BADGE ── */
+.badge {
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  padding:3px 9px;
+  border-radius:4px;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  display:inline-block;
+  min-width:62px;
+  text-align:center;
+}
+.badge.GET    { background:var(--get-bg);   color:var(--get);   border:1px solid var(--get-b);   }
+.badge.POST   { background:var(--post-bg);  color:var(--post);  border:1px solid var(--post-b);  }
+.badge.PATCH  { background:var(--patch-bg); color:var(--patch); border:1px solid var(--patch-b); }
+.badge.DELETE { background:var(--delete-bg);color:var(--delete);border:1px solid var(--delete-b);}
+.badge.SSE    { background:var(--sse-bg);   color:var(--sse);   border:1px solid var(--sse-b);   }
+
+/* ── SECTION ── */
+.section { margin-bottom:64px; scroll-margin-top:28px; }
+
+.section-head {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:6px;
+}
+.section-num {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-dim);
+  width:28px;
+}
+.section-icon {
+  font-size:16px;
+  line-height:1;
+}
+.section-title {
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:-.015em;
+}
+.section-en {
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-muted);
+}
+.section-rule { flex:1; height:1px; background:var(--border); }
+
+.section-note {
+  font-size:12px;
+  color:var(--text-muted);
+  margin-bottom:14px;
+  padding-left:44px;
+  line-height:1.7;
+}
+
+/* ── ENDPOINT TABLE ── */
+.ep-table {
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.ep-thead {
+  display:grid;
+  grid-template-columns:90px 1fr 1fr 200px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border-hi);
+}
+.ep-th {
+  padding:7px 16px;
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--text-dim);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  border-right:1px solid var(--border);
+}
+.ep-th:last-child { border-right:none; }
+
+.ep-row {
+  display:grid;
+  grid-template-columns:90px 1fr 1fr 200px;
+  border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.ep-row:last-child { border-bottom:none; }
+.ep-row:hover { background:var(--surface2); }
+
+.ep-method {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:13px 8px;
+  border-right:1px solid var(--border);
+}
+
+.ep-path {
+  padding:13px 18px;
+  border-right:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:#a8bee0;
+  letter-spacing:-.01em;
+}
+.ep-path .p { color:var(--patch); }
+
+.ep-desc {
+  padding:13px 18px;
+  border-right:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  font-size:12.5px;
+  color:var(--text-muted);
+  line-height:1.5;
+}
+
+.ep-tags {
+  padding:13px 14px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+}
+
+.tag {
+  font-family:var(--mono);
+  font-size:9.5px;
+  padding:2px 7px;
+  border-radius:3px;
+  background:var(--surface3);
+  color:var(--text-muted);
+  border:1px solid var(--border);
+}
+.tag.auth    { background:rgba(129,140,248,.1); color:#818cf8; border-color:rgba(129,140,248,.2); }
+.tag.stream  { background:rgba(192,132,252,.1); color:var(--sse); border-color:rgba(192,132,252,.2); }
+.tag.admin   { background:rgba(251,191,36,.1);  color:var(--patch); border-color:rgba(251,191,36,.2); }
+.tag.bulk    { background:rgba(248,113,113,.1); color:var(--delete); border-color:rgba(248,113,113,.2); }
+.tag.upload  { background:rgba(74,222,128,.1);  color:var(--post); border-color:rgba(74,222,128,.2); }
+
+.note-box {
+  background:rgba(56,189,248,.04);
+  border:1px solid rgba(56,189,248,.14);
+  border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+  padding:11px 16px;
+  font-size:12px;
+  color:var(--text-muted);
+  line-height:1.7;
+  margin-top:12px;
+}
+.note-box strong { color:var(--accent); font-family:var(--mono); }
+
+/* ── FLOW DIAGRAM ── */
+.flow-wrap {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:30px;
+  margin-top:12px;
+}
+.flow-wrap h4 {
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:20px;
+}
+
+.flow {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:0;
+}
+.flow-node {
+  background:var(--surface2);
+  border:1px solid var(--border-hi);
+  border-radius:6px;
+  padding:10px 16px;
+  font-size:12px;
+  text-align:center;
+  line-height:1.4;
+}
+.flow-node .fn-label { font-family:var(--mono); font-size:10px; color:var(--text-muted); }
+.flow-node .fn-title { font-weight:600; color:var(--text); }
+.flow-arrow {
+  padding:0 10px;
+  color:var(--text-dim);
+  font-size:16px;
+  font-family:var(--mono);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px;}
+
+@media(max-width:1100px){
+  .sidebar{display:none;}
+  .main{padding:32px 24px;}
+  .ep-thead,.ep-row{grid-template-columns:76px 1fr 1fr;}
+  .ep-tags{display:none;}
+  .ep-th:last-child{display:none;}
+  .stats-bar{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:700px){
+  .ep-thead,.ep-row{grid-template-columns:72px 1fr;}
+  .ep-desc{display:none;}
+  .ep-th:nth-child(3){display:none;}
+  .stats-bar{grid-template-columns:repeat(2,1fr);}
+  .page-title{font-size:26px;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ───────────── SIDEBAR ───────────── -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-eyebrow">API Blueprint</div>
+    <div class="sb-title">AI Chat Interface<br>Server-Side Design</div>
+    <div class="sb-base">/api/v1</div>
+  </div>
+
+  <nav>
+    <div class="nav-section-label">Core</div>
+    <a href="#auth" class="nav-link"><span class="nav-dot" style="background:#818cf8"></span>認証<span class="nav-count">6</span></a>
+    <a href="#sessions" class="nav-link"><span class="nav-dot" style="background:#38bdf8"></span>セッション<span class="nav-count">9</span></a>
+    <a href="#messages" class="nav-link"><span class="nav-dot" style="background:#4ade80"></span>メッセージ<span class="nav-count">12</span></a>
+    <a href="#attachments" class="nav-link"><span class="nav-dot" style="background:#fbbf24"></span>添付ファイル<span class="nav-count">4</span></a>
+
+    <div class="nav-section-label" style="margin-top:8px">AI Provider</div>
+    <a href="#providers" class="nav-link"><span class="nav-dot" style="background:#f87171"></span>プロバイダー<span class="nav-count">7</span></a>
+    <a href="#models" class="nav-link"><span class="nav-dot" style="background:#fb923c"></span>モデル<span class="nav-count">9</span></a>
+
+    <div class="nav-section-label" style="margin-top:8px">Organization</div>
+    <a href="#folders" class="nav-link"><span class="nav-dot" style="background:#a3e635"></span>フォルダ・タグ<span class="nav-count">8</span></a>
+    <a href="#presets" class="nav-link"><span class="nav-dot" style="background:#22d3ee"></span>プリセット<span class="nav-count">6</span></a>
+
+    <div class="nav-section-label" style="margin-top:8px">Config</div>
+    <a href="#settings" class="nav-link"><span class="nav-dot" style="background:#e879f9"></span>設定<span class="nav-count">12</span></a>
+    <a href="#search" class="nav-link"><span class="nav-dot" style="background:#60a5fa"></span>検索<span class="nav-count">3</span></a>
+    <a href="#system" class="nav-link"><span class="nav-dot" style="background:#94a3b8"></span>システム<span class="nav-count">4</span></a>
+  </nav>
+
+  <div class="sb-footer">
+    REST / JSON<br>
+    SSE for streaming<br>
+    JWT Bearer Auth<br>
+    Rate Limited
+  </div>
+</aside>
+
+<!-- ───────────── MAIN ───────────── -->
+<main class="main">
+
+  <div class="page-header">
+    <div class="page-eyebrow">Server-Side API Design</div>
+    <h1 class="page-title">AI Chat Interface<br><span>API Blueprint</span></h1>
+    <p class="page-desc">
+      AIチャットインターフェースのサーバー側 REST API 設計図です。<br>
+      認証・セッション管理・メッセージ処理・プロバイダー/モデル管理・設定変更など全エンドポイントを網羅しています。
+      ベースURL: <code style="font-family:var(--mono);color:var(--accent);font-size:13px">/api/v1</code>
+    </p>
+
+    <div class="page-meta">
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--post)"></span>REST JSON API</span>
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--sse)"></span>SSE Streaming</span>
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:#818cf8"></span>JWT Bearer Auth</span>
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--patch)"></span>Rate Limiting</span>
+      <span class="meta-pill"><span class="meta-pill-dot" style="background:var(--delete)"></span>Versioned: v1</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--text)">80</div>
+      <div class="stat-label">Total Endpoints</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--get)">26</div>
+      <div class="stat-label">GET</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--post)">24</div>
+      <div class="stat-label">POST</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--patch)">18</div>
+      <div class="stat-label">PATCH</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--delete)">12</div>
+      <div class="stat-label">DELETE</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><span class="badge GET">GET</span>リソース取得・一覧</div>
+    <div class="legend-item"><span class="badge POST">POST</span>リソース作成・アクション</div>
+    <div class="legend-item"><span class="badge PATCH">PATCH</span>部分更新・設定変更</div>
+    <div class="legend-item"><span class="badge DELETE">DELETE</span>リソース削除</div>
+    <div class="legend-item"><span class="badge SSE">SSE</span>Server-Sent Events ストリーミング</div>
+  </div>
+
+  <!-- ─────────────────────────── -->
+  <!-- 1. AUTH -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="auth">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <span class="section-icon">🔐</span>
+      <div>
+        <div class="section-title">認証</div>
+        <div class="section-en">Authentication</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      JWT (Access Token + Refresh Token) による認証。Access Token は短命（15分）、Refresh Token は長命（30日）。
+      すべての保護エンドポイントは <code style="font-family:var(--mono);font-size:11px;color:var(--accent)">Authorization: Bearer &lt;token&gt;</code> ヘッダーが必要。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/auth/register</div>
+        <div class="ep-desc">新規ユーザー登録。email, password, display_name を受け取り access/refresh token を返す</div>
+        <div class="ep-tags"><span class="tag">public</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/auth/login</div>
+        <div class="ep-desc">ログイン。credentials を検証し token pair を発行</div>
+        <div class="ep-tags"><span class="tag">public</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/auth/logout</div>
+        <div class="ep-desc">ログアウト。Refresh Token をブラックリストに追加して無効化</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/auth/refresh</div>
+        <div class="ep-desc">Refresh Token を使い Access Token を再発行</div>
+        <div class="ep-tags"><span class="tag">public</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/auth/me</div>
+        <div class="ep-desc">現在ログイン中のユーザー情報を取得</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/auth/me</div>
+        <div class="ep-desc">プロフィール更新（表示名・パスワード変更・アバター）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 2. SESSIONS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="sessions">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <span class="section-icon">💬</span>
+      <div>
+        <div class="section-title">セッション</div>
+        <div class="section-en">Sessions</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      会話セッションの作成・取得・更新・削除・エクスポート/インポートを管理。
+      セッションはメッセージ履歴・使用モデル・システムプロンプト等のメタデータを保持する。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions</div>
+        <div class="ep-desc">セッション一覧取得。クエリ: <code style="font-family:var(--mono);font-size:11px">q, folder_id, tag, model, limit, offset, sort</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions</div>
+        <div class="ep-desc">新規セッション作成。title, model_id, preset_id, folder_id などを指定</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span></div>
+        <div class="ep-desc">特定セッションの詳細取得（メタデータ・統計情報含む）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span></div>
+        <div class="ep-desc">セッション更新: タイトル変更・フォルダ移動・モデル切替・システムプロンプト変更・ピン留め</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span></div>
+        <div class="ep-desc">単一セッション削除（論理削除または物理削除）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions</div>
+        <div class="ep-desc">複数セッション一括削除。Body: <code style="font-family:var(--mono);font-size:11px">{ ids: string[] }</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag bulk">bulk</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/duplicate</div>
+        <div class="ep-desc">セッションを複製（メッセージ履歴ごとコピー）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/export</div>
+        <div class="ep-desc">セッションをエクスポート。クエリ: <code style="font-family:var(--mono);font-size:11px">format=json|md|txt</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/import</div>
+        <div class="ep-desc">エクスポートしたセッションをインポート（JSON/Markdown対応）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag upload">upload</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 3. MESSAGES -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="messages">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <span class="section-icon">📨</span>
+      <div>
+        <div class="section-title">メッセージ / チャット</div>
+        <div class="section-en">Messages & Chat</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      メッセージの送受信・編集・削除・再生成・ブランチ（会話分岐）・マージを管理。
+      送信はストリーミング（SSE）と非ストリーミングの両モードに対応。再生成では複数バージョン（世代）を保持できる。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages</div>
+        <div class="ep-desc">メッセージ一覧取得。クエリ: <code style="font-family:var(--mono);font-size:11px">limit, before, after, branch_id</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages</div>
+        <div class="ep-desc">メッセージ送信・AI 応答生成。<code style="font-family:var(--mono);font-size:11px">stream=true</code> で SSE に切替可</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag stream">stream</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span></div>
+        <div class="ep-desc">特定メッセージ取得（メタデータ・トークン数・所要時間含む）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span></div>
+        <div class="ep-desc">メッセージ本文の編集（編集後に後続メッセージの再生成をトリガー可）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span></div>
+        <div class="ep-desc">単一メッセージ削除</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span>/after</div>
+        <div class="ep-desc">指定メッセージ以降を全削除（コンテキストの巻き戻し）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag bulk">bulk</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span>/regenerate</div>
+        <div class="ep-desc">AI 応答を再生成。同メッセージに新バージョンとして追加。<code style="font-family:var(--mono);font-size:11px">stream=true</code> 対応</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag stream">stream</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span>/versions</div>
+        <div class="ep-desc">再生成で作成されたバージョン一覧取得（世代履歴）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span>/version</div>
+        <div class="ep-desc">表示するバージョンを切替。Body: <code style="font-family:var(--mono);font-size:11px">{ version_id: string }</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/messages/<span class="p">{msgId}</span>/branch</div>
+        <div class="ep-desc">指定メッセージから新しい会話ブランチを作成（フォーク）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/merge</div>
+        <div class="ep-desc">複数セッションのメッセージ履歴を結合。Body: <code style="font-family:var(--mono);font-size:11px">{ source_ids[], target_id, strategy }</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag bulk">bulk</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge SSE">SSE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/stream</div>
+        <div class="ep-desc">Server-Sent Events ストリーム接続。デルタトークンをリアルタイム配信</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag stream">stream</span></div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>SSE イベント種別：</strong>
+      <code style="font-family:var(--mono)">message.start</code> → <code style="font-family:var(--mono)">content.delta</code> → <code style="font-family:var(--mono)">content.done</code> → <code style="font-family:var(--mono)">usage</code> → <code style="font-family:var(--mono)">message.stop</code> | <code style="font-family:var(--mono)">error</code>
+    </div>
+
+    <div class="flow-wrap" style="margin-top:14px;">
+      <h4>メッセージ送信フロー</h4>
+      <div class="flow">
+        <div class="flow-node"><div class="fn-label">Client</div><div class="fn-title">POST /messages</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="fn-label">Auth Middleware</div><div class="fn-title">JWT 検証</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="fn-label">Context Builder</div><div class="fn-title">履歴収集・整形</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="fn-label">Provider Router</div><div class="fn-title">モデル選択</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="fn-label">AI Provider API</div><div class="fn-title">ストリーミング生成</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="fn-label">SSE / Response</div><div class="fn-title">クライアントへ配信</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 4. ATTACHMENTS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="attachments">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <span class="section-icon">📎</span>
+      <div>
+        <div class="section-title">添付ファイル</div>
+        <div class="section-en">Attachments</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      画像・PDF・テキストファイルなどをセッションにアップロードしてコンテキストとして利用。
+      ファイルはサーバーに保存され、メッセージ送信時に参照 ID で添付する。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/attachments</div>
+        <div class="ep-desc">セッションの添付ファイル一覧取得</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/attachments</div>
+        <div class="ep-desc">ファイルアップロード（multipart/form-data）。画像・PDF・テキストに対応</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag upload">upload</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/attachments/<span class="p">{attachId}</span></div>
+        <div class="ep-desc">添付ファイルのメタデータ取得またはバイナリダウンロード</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/attachments/<span class="p">{attachId}</span></div>
+        <div class="ep-desc">添付ファイル削除</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 5. PROVIDERS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="providers">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <span class="section-icon">🔌</span>
+      <div>
+        <div class="section-title">プロバイダー</div>
+        <div class="section-en">AI Providers</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      OpenAI・Anthropic・Google Gemini・Ollama（ローカル）などの AI プロバイダーを管理。
+      API キーは暗号化して保存。各プロバイダーには有効/無効の切替と接続テスト機能を提供する。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/providers</div>
+        <div class="ep-desc">登録済みプロバイダー一覧（API キーはマスク表示）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/providers</div>
+        <div class="ep-desc">新プロバイダー追加。<code style="font-family:var(--mono);font-size:11px">type, name, api_key, base_url</code> を指定</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span></div>
+        <div class="ep-desc">プロバイダー詳細取得（有効モデル一覧・ステータス含む）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span></div>
+        <div class="ep-desc">プロバイダー設定更新（API キー・表示名・ベース URL・有効/無効）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span></div>
+        <div class="ep-desc">プロバイダー削除（関連モデルも削除）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/test</div>
+        <div class="ep-desc">API キーの有効性と疎通確認。レイテンシも計測して返す</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/sync</div>
+        <div class="ep-desc">プロバイダーからモデル一覧を取得して DB を同期</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 6. MODELS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="models">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <span class="section-icon">🤖</span>
+      <div>
+        <div class="section-title">モデル</div>
+        <div class="section-en">Models</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      各プロバイダーが提供するモデルの追加・削除・パラメータ管理。
+      コンテキストウィンドウ・最大出力トークン・温度設定・対応機能（ビジョン・コード等）などを個別に設定できる。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/models</div>
+        <div class="ep-desc">全プロバイダーのモデル一覧。クエリ: <code style="font-family:var(--mono);font-size:11px">provider_id, enabled, supports_vision</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models</div>
+        <div class="ep-desc">特定プロバイダーのモデル一覧</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models</div>
+        <div class="ep-desc">モデルを手動追加（カスタム・ファインチューン済みモデル等）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/<span class="p">{modelId}</span></div>
+        <div class="ep-desc">モデル詳細取得（コンテキストウィンドウ・料金・機能一覧）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/<span class="p">{modelId}</span></div>
+        <div class="ep-desc">モデル情報更新（表示名・コンテキストウィンドウ・最大出力・デフォルト温度・有効/無効フラグ・説明文）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/<span class="p">{modelId}</span></div>
+        <div class="ep-desc">モデル削除（利用中のセッションへの影響を警告）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/<span class="p">{modelId}</span>/capabilities</div>
+        <div class="ep-desc">モデルの対応機能確認（vision, tools, json_mode, streaming 等）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/<span class="p">{modelId}</span>/capabilities</div>
+        <div class="ep-desc">機能フラグのオーバーライド設定（プロバイダー情報と異なる場合）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/providers/<span class="p">{id}</span>/models/sync</div>
+        <div class="ep-desc">プロバイダーの公開 API からモデル一覧を取得して DB と差分同期</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>PATCH /models/{id} 更新可能フィールド：</strong>
+      display_name, context_window, max_output_tokens, default_temperature, default_top_p, input_price_per_1k, output_price_per_1k, is_enabled, description, capabilities_override
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 7. FOLDERS & TAGS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="folders">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <span class="section-icon">📁</span>
+      <div>
+        <div class="section-title">フォルダ・タグ</div>
+        <div class="section-en">Folders & Tags</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      セッションをフォルダやタグで整理・分類するためのエンドポイント。フォルダはネスト構造に対応。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/folders</div>
+        <div class="ep-desc">フォルダ一覧取得（ツリー構造）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/folders</div>
+        <div class="ep-desc">フォルダ作成。<code style="font-family:var(--mono);font-size:11px">name, parent_id, color, icon</code> を指定</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/folders/<span class="p">{id}</span></div>
+        <div class="ep-desc">フォルダ更新（名前変更・移動・色/アイコン変更）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/folders/<span class="p">{id}</span></div>
+        <div class="ep-desc">フォルダ削除。クエリ: <code style="font-family:var(--mono);font-size:11px">cascade=true</code> で中のセッションも削除</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/tags</div>
+        <div class="ep-desc">タグ一覧取得（使用頻度・件数付き）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/tags</div>
+        <div class="ep-desc">セッションにタグを追加。Body: <code style="font-family:var(--mono);font-size:11px">{ tags: string[] }</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/sessions/<span class="p">{id}</span>/tags/<span class="p">{tag}</span></div>
+        <div class="ep-desc">セッションから特定タグを削除</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/tags/<span class="p">{tag}</span></div>
+        <div class="ep-desc">タグ自体を削除（全セッションから一括削除）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag bulk">bulk</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 8. PRESETS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="presets">
+    <div class="section-head">
+      <span class="section-num">08</span>
+      <span class="section-icon">🧩</span>
+      <div>
+        <div class="section-title">プリセット</div>
+        <div class="section-en">Presets / System Prompts</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      システムプロンプト・モデルパラメータ・動作設定をテンプレートとして保存・再利用。セッション作成時に適用可能。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/presets</div>
+        <div class="ep-desc">プリセット一覧取得（ユーザー作成 + 公開プリセット）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/presets</div>
+        <div class="ep-desc">新プリセット作成（名前・説明・システムプロンプト・モデルパラメータ）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/presets/<span class="p">{id}</span></div>
+        <div class="ep-desc">プリセット詳細取得</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/presets/<span class="p">{id}</span></div>
+        <div class="ep-desc">プリセット更新（全フィールド部分更新可）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge DELETE">DELETE</span></div>
+        <div class="ep-path">/presets/<span class="p">{id}</span></div>
+        <div class="ep-desc">プリセット削除</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/presets/<span class="p">{id}</span>/apply</div>
+        <div class="ep-desc">既存セッションにプリセットを適用。Body: <code style="font-family:var(--mono);font-size:11px">{ session_id, override_model }</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 9. SETTINGS -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="settings">
+    <div class="section-head">
+      <span class="section-num">09</span>
+      <span class="section-icon">⚙️</span>
+      <div>
+        <div class="section-title">設定</div>
+        <div class="section-en">Settings</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      ユーザーの全設定をカテゴリ別に管理。外観・チャット動作・通知・プライバシー・API 使用量の閾値などを個別に更新可能。
+      設定はエクスポート/インポートにも対応しており、環境の移行を容易にする。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings</div>
+        <div class="ep-desc">全設定を取得（全カテゴリをフラットに返す）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/settings</div>
+        <div class="ep-desc">複数カテゴリにまたがる設定を一括更新</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings/appearance</div>
+        <div class="ep-desc">外観設定取得（テーマ・フォントサイズ・フォントファミリー・コードハイライト・言語）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/settings/appearance</div>
+        <div class="ep-desc">外観設定更新</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings/chat</div>
+        <div class="ep-desc">チャット設定取得（デフォルトモデル・温度・最大トークン・レスポンスフォーマット・自動タイトル生成）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/settings/chat</div>
+        <div class="ep-desc">チャット設定更新</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings/notifications</div>
+        <div class="ep-desc">通知設定取得（プッシュ通知・メール通知・サウンド）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/settings/notifications</div>
+        <div class="ep-desc">通知設定更新</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings/privacy</div>
+        <div class="ep-desc">プライバシー設定取得（データ保存期間・使用状況の送信・セッション暗号化）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge PATCH">PATCH</span></div>
+        <div class="ep-path">/settings/privacy</div>
+        <div class="ep-desc">プライバシー設定更新</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/settings/reset</div>
+        <div class="ep-desc">設定をデフォルトにリセット。Body: <code style="font-family:var(--mono);font-size:11px">{ category?: string }</code>（省略で全リセット）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/settings/export</div>
+        <div class="ep-desc">全設定を JSON ファイルとしてエクスポート（API キーは除外）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge POST">POST</span></div>
+        <div class="ep-path">/settings/import</div>
+        <div class="ep-desc">エクスポートした設定 JSON をインポートして上書き</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag upload">upload</span></div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>設定カテゴリ一覧：</strong>
+      <code style="font-family:var(--mono)">appearance</code>（外観）, <code style="font-family:var(--mono)">chat</code>（チャット動作）, <code style="font-family:var(--mono)">notifications</code>（通知）, <code style="font-family:var(--mono)">privacy</code>（プライバシー）, <code style="font-family:var(--mono)">shortcuts</code>（キーボードショートカット）, <code style="font-family:var(--mono)">api_usage</code>（使用量アラート）
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 10. SEARCH -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="search">
+    <div class="section-head">
+      <span class="section-num">10</span>
+      <span class="section-icon">🔍</span>
+      <div>
+        <div class="section-title">検索</div>
+        <div class="section-en">Search</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      セッション・メッセージを横断して全文検索。キーワード・日付範囲・モデル・プロバイダーでフィルタリング可能。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/search</div>
+        <div class="ep-desc">セッション・メッセージ横断全文検索。クエリ: <code style="font-family:var(--mono);font-size:11px">q, type, from, to, model_id, limit</code></div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/search/sessions</div>
+        <div class="ep-desc">セッションのみに絞った検索（タイトル・システムプロンプト対象）</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/search/messages</div>
+        <div class="ep-desc">メッセージ本文の全文検索。スニペット付きで結果を返す</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── -->
+  <!-- 11. SYSTEM -->
+  <!-- ─────────────────────────── -->
+  <section class="section" id="system">
+    <div class="section-head">
+      <span class="section-num">11</span>
+      <span class="section-icon">🖥️</span>
+      <div>
+        <div class="section-title">システム</div>
+        <div class="section-en">System</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <p class="section-note">
+      ヘルスチェック・バージョン情報・メトリクスなどの運用系エンドポイント。
+    </p>
+
+    <div class="ep-table">
+      <div class="ep-thead">
+        <div class="ep-th">Method</div>
+        <div class="ep-th">Endpoint</div>
+        <div class="ep-th">説明</div>
+        <div class="ep-th">Tags</div>
+      </div>
+
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/health</div>
+        <div class="ep-desc">ヘルスチェック。DB・キャッシュ・外部依存のステータスを返す</div>
+        <div class="ep-tags"><span class="tag">public</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/version</div>
+        <div class="ep-desc">API バージョン・ビルド情報・対応機能リストを返す</div>
+        <div class="ep-tags"><span class="tag">public</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/status</div>
+        <div class="ep-desc">各 AI プロバイダーの稼働状況・レスポンスタイムをまとめて返す</div>
+        <div class="ep-tags"><span class="tag auth">auth</span></div>
+      </div>
+      <div class="ep-row">
+        <div class="ep-method"><span class="badge GET">GET</span></div>
+        <div class="ep-path">/metrics</div>
+        <div class="ep-desc">利用統計（トークン数・コスト・リクエスト数・エラーレート）※管理者のみ</div>
+        <div class="ep-tags"><span class="tag auth">auth</span><span class="tag admin">admin</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM NOTES -->
+  <div style="margin-top:40px;padding-top:40px;border-top:1px solid var(--border);">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">エラーレスポンス</div>
+        <div style="font-family:var(--mono);font-size:11.5px;color:var(--text-muted);line-height:2;">
+          400 Bad Request<br>
+          401 Unauthorized<br>
+          403 Forbidden<br>
+          404 Not Found<br>
+          409 Conflict<br>
+          413 Payload Too Large<br>
+          429 Too Many Requests<br>
+          500 Internal Server Error<br>
+          503 Service Unavailable
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">共通レスポンス形式</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);line-height:1.9;background:var(--surface2);padding:12px;border-radius:6px;border:1px solid var(--border);">
+          {<br>
+          &nbsp;&nbsp;"success": true,<br>
+          &nbsp;&nbsp;"data": { ... },<br>
+          &nbsp;&nbsp;"meta": {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"total": 100,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"limit": 20,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"offset": 0<br>
+          &nbsp;&nbsp;},<br>
+          &nbsp;&nbsp;"error": null<br>
+          }
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;">レート制限</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.9;">
+          <div style="display:flex;gap:8px;margin-bottom:6px;"><span style="font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text);">一般 API</span>60 req / min</div>
+          <div style="display:flex;gap:8px;margin-bottom:6px;"><span style="font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text);">メッセージ送信</span>20 req / min</div>
+          <div style="display:flex;gap:8px;margin-bottom:6px;"><span style="font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text);">ファイル UP</span>10 req / min</div>
+          <div style="display:flex;gap:8px;"><span style="font-family:var(--mono);font-size:10px;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text);">認証</span>10 req / min</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:10px;">
+            X-RateLimit-Limit<br>
+            X-RateLimit-Remaining<br>
+            X-RateLimit-Reset
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// Sidebar active link highlighting on scroll
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      const activeLink = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (activeLink) activeLink.classList.add('active');
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-60px 0px -60% 0px' });
+
+sections.forEach(s => observer.observe(s));
+
+// Smooth scroll
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>
