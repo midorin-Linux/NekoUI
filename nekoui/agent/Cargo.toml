@@ -6,10 +6,18 @@ license.workspace = true
 
 [dependencies]
 nekoui-config.workspace = true
+nekoui-domain.workspace = true
+nekoui-memory.workspace = true
 nekoui-telemetry.workspace = true
 
 anyhow.workspace = true
+chrono.workspace = true
+dashmap.workspace = true
 derive_builder.workspace = true
 rig.workspace = true
+serde.workspace = true
 serde_json.workspace = true
+tokio.workspace = true
+tokio-retry.workspace = true
 tracing.workspace = true
+uuid.workspace = true

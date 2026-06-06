@@ -15,11 +15,7 @@ impl OpenAICompatibleAdapter {
         Self { client }
     }
 
-    pub fn build_agent(
-        &self,
-        model: &str,
-        config: TextModelProvider,
-    ) -> AgentBuilder<CompletionModel> {
+    pub fn build_agent(&self, config: TextModelProvider) -> AgentBuilder<CompletionModel> {
         fn extract(entries: &[Value], key: &str) -> Option<Value> {
             entries.iter().find_map(|entry| entry.get(key).cloned())
         }
@@ -46,7 +42,7 @@ impl OpenAICompatibleAdapter {
             });
 
         self.client
-            .agent(model)
+            .agent(&config.model_id)
             .max_tokens(max_token)
             .temperature(temperature)
             .default_max_turns(20)

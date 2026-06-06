@@ -5,3 +5,12 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+nekoui-config.workspace = true
+nekoui-domain.workspace = true
+
+anyhow.workspace = true
+chrono.workspace = true
+dashmap.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true

@@ -35,6 +35,7 @@ async fn run() -> Result<()> {
         Some(("start", sub_matches)) => {
             let start_command = commands::start::StartCommand::new(sub_matches).await?;
 
+            #[allow(unused)]
             let runtime = Agent::builder(start_command.config)?.build()?;
             Ok(())
         }

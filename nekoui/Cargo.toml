@@ -1,5 +1,5 @@
 [workspace]
-members = ["agent", "api-server","app", "config", "events", "inference", "memory", "telemetry", "tools", "wizard"]
+members = ["agent", "api-server","app", "config", "domain", "events", "inference", "memory", "telemetry", "tools", "wizard"]
 resolver = "2"
 
 [workspace.package]
@@ -12,6 +12,7 @@ nekoui-agent = { path = "agent", package = "agent" }
 nekoui-api-server = { path = "api-server", package = "api-server" }
 nekoui-app = { path = "app", package = "app" }
 nekoui-config = { path = "config", package = "config" }
+nekoui-domain = { path = "domain", package = "domain" }
 nekoui-events = { path = "events", package = "events" }
 nekoui-inference = { path = "inference", package = "inference" }
 nekoui-memory = { path = "memory", package = "memory" }
@@ -24,17 +25,20 @@ chrono = "0.4"
 clap = { version = "4.6", features = ["derive"] }
 colored = "3.1"
 config = "0.15"
+dashmap = "7.0.0-rc2"
 derive_builder = "0.20"
 dotenvy = "0.15"
 dialoguer = "0.12"
 indicatif = "0.18"
-rig = { package = "rig-core", version = "0.37", features = ["image", "derive"] }
+rig = { package = "rig-core", version = "0.38", features = ["image", "derive"] }
 secrecy = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
 tokio = { version = "1.52", features = ["full"] }
+tokio-retry = "0.3"
 tracing = "0.1"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1.23", features = ["v4", "serde"] }
 zeroize = "1.8"
