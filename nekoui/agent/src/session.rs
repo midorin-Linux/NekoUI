@@ -18,6 +18,7 @@ pub struct ConversationTurn {
 #[derive(Clone)]
 pub struct Session {
     pub key: SessionKey,
+    pub title: String,
     pub messages: VecDeque<Message>,
     pub turns: VecDeque<ConversationTurn>,
     pub created_at: DateTime<Utc>,
@@ -91,6 +92,7 @@ impl SessionManager {
                 let now = Utc::now();
                 Arc::new(Mutex::new(Session {
                     key: session_key.clone(),
+                    title: "New Chat".to_string(), //ToDo: 設定できるようにする
                     messages: VecDeque::new(),
                     turns: VecDeque::new(),
                     created_at: now,

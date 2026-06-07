@@ -6,6 +6,7 @@ use crate::{response::ApiResponse, routes::AppState};
 #[derive(Serialize)]
 struct SessionListItem {
     session_id: String,
+    title: String,
     created_at: String,
     last_active: String,
     message_turns: usize,
@@ -26,6 +27,7 @@ pub async fn create_session(State(state): State<AppState>) -> impl IntoResponse 
 
     ApiResponse::success(SessionListItem {
         session_id: session_key.conversation_id.to_string(),
+        title: session_guard.title.clone(),
         created_at: session_guard.created_at.to_string(),
         last_active: session_guard.last_active.to_string(),
         message_turns: session_guard.messages.len(),
@@ -41,6 +43,7 @@ pub async fn list_sessions(State(state): State<AppState>) -> impl IntoResponse {
             let session_guard = session.lock().await;
             sessions.push(SessionListItem {
                 session_id: key.conversation_id.to_string(),
+                title: session_guard.title.clone(),
                 created_at: session_guard.created_at.to_string(),
                 last_active: session_guard.last_active.to_string(),
                 message_turns: session_guard.messages.len(),
