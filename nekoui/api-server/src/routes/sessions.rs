@@ -1,6 +1,12 @@
-use axum::{extract::{Path, State}, http::StatusCode, response::IntoResponse};
-use serde::Serialize;
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+};
+use serde::{Deserialize, Serialize};
 use tracing::debug;
+
 use crate::{response::ApiResponse, routes::AppState};
 
 #[derive(Serialize)]
@@ -41,27 +47,42 @@ pub async fn list_sessions(State(state): State<AppState>) -> impl IntoResponse {
     for key in all_session_keys {
         if let Ok(session) = state.http_state.agent.session_manager().get(&key) {
             let session_guard = session.lock().await;
-            sessions.push((session_guard.last_active, SessionListItem {
-                session_id: key.conversation_id.to_string(),
-                title: session_guard.title.clone(),
-                created_at: session_guard.created_at.to_string(),
-                last_active: session_guard.last_active.to_string(),
-                message_turns: session_guard.messages.len(),
-            }));
+            sessions.push((
+                session_guard.last_active,
+                SessionListItem {
+                    session_id: key.conversation_id.to_string(),
+                    title: session_guard.title.clone(),
+                    created_at: session_guard.created_at.to_string(),
+                    last_active: session_guard.last_active.to_string(),
+                    message_turns: session_guard.messages.len(),
+                },
+            ));
         }
     }
 
-    sessions.sort_by(|a, b| b.0.cmp(&a.0));
+    sessions.sort_by_key(|b| std::cmp::Reverse(b.0));
 
-    ApiResponse::success(sessions.into_iter().map(|(_, item)| item).collect::<Vec<_>>())
+    ApiResponse::success(
+        sessions
+            .into_iter()
+            .map(|(_, item)| item)
+            .collect::<Vec<_>>(),
+    )
 }
 
-pub async fn get_session(State(state): State<AppState>, Path(id): Path<String>) -> impl IntoResponse {
-    let session_key = match state.http_state.agent.session_manager().get_session_key(id){
+pub async fn get_session(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    let session_key = match state.http_state.agent.session_manager().get_session_key(id) {
         Ok(key) => key,
         Err(_) => {
-            return ApiResponse::error(StatusCode::BAD_REQUEST, "INVALID_SESSION_ID", "Invalid session id")
-        },
+            return ApiResponse::error(
+                StatusCode::BAD_REQUEST,
+                "INVALID_SESSION_ID",
+                "Invalid session id",
+            );
+        }
     };
 
     match state.http_state.agent.session_manager().get(&session_key) {
@@ -75,10 +96,63 @@ pub async fn get_session(State(state): State<AppState>, Path(id): Path<String>) 
                 message_turns: session_guard.messages.len(),
             };
             ApiResponse::success(session_info)
-        },
+        }
         Err(e) => {
             debug!("Session not found: {:?}", e);
-            ApiResponse::error(StatusCode::NOT_FOUND, "SESSION_NOT_FOUND", "Session not found")
+            ApiResponse::error(
+                StatusCode::NOT_FOUND,
+                "SESSION_NOT_FOUND",
+                "Session not found",
+            )
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct PatchSessionRequest {
+    title: String,
+}
+
+pub async fn patch_session(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    Json(body): Json<PatchSessionRequest>,
+) -> impl IntoResponse {
+    let session_key = match state.http_state.agent.session_manager().get_session_key(id) {
+        Ok(key) => key,
+        Err(_) => {
+            return ApiResponse::error(
+                StatusCode::BAD_REQUEST,
+                "INVALID_SESSION_ID",
+                "Invalid session id",
+            );
+        }
+    };
+
+    match state
+        .http_state
+        .agent
+        .session_manager()
+        .patch_session(session_key, body.title)
+        .await
+    {
+        Ok(session) => {
+            let session_info = SessionListItem {
+                session_id: session.key.conversation_id.to_string(),
+                title: session.title.clone(),
+                created_at: session.created_at.to_string(),
+                last_active: session.last_active.to_string(),
+                message_turns: session.messages.len(),
+            };
+            ApiResponse::success(session_info)
+        }
+        Err(e) => {
+            debug!("Session not found: {:?}", e);
+            ApiResponse::error(
+                StatusCode::NOT_FOUND,
+                "SESSION_NOT_FOUND",
+                "Session not found",
+            )
         }
     }
 }

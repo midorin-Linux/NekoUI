@@ -141,4 +141,13 @@ impl SessionManager {
         };
         Ok(SessionKey::new(uuid, None))
     }
+
+    pub async fn patch_session(&self, session_key: SessionKey, title: String) -> Result<Session> {
+        let session_arc = self.get(&session_key)?;
+        let mut session = session_arc.lock().await;
+        session.title = title;
+        session.last_active = Utc::now();
+
+        Ok(session.clone())
+    }
 }
