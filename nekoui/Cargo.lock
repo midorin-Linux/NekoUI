@@ -114,24 +114,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "app"
-version = "0.0.0"
-dependencies = [
- "agent",
- "anyhow",
- "api-server",
- "clap",
- "colored",
- "config 0.0.0",
- "dialoguer",
- "indicatif",
- "telemetry",
- "tokio",
- "tracing",
- "wizard",
-]
-
-[[package]]
 name = "arraydeque"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1630,6 +1612,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ffa00dec017b5b1a8b7cf5e2c008bfda1aa7e0697ac1508b491fdf2622fb4d8"
 dependencies = [
  "rand 0.8.6",
+]
+
+[[package]]
+name = "nekoui"
+version = "0.0.0"
+dependencies = [
+ "agent",
+ "anyhow",
+ "api-server",
+ "clap",
+ "colored",
+ "config 0.0.0",
+ "dialoguer",
+ "indicatif",
+ "telemetry",
+ "tokio",
+ "tracing",
+ "wizard",
 ]
 
 [[package]]

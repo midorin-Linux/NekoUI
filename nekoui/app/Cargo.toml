@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "nekoui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

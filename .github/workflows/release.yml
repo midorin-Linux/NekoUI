@@ -1,0 +1,222 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0). Leave empty for auto-generate.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ──────────────────────────────────────────────
+  #  Build backend binaries (matrix: 3 platforms)
+  # ──────────────────────────────────────────────
+  build-backend:
+    name: Build backend (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x86_64
+          - os: windows-latest
+            target: windows-x86_64
+          - os: macos-latest
+            target: macos-x86_64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: nekoui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: nekoui
+
+      - name: Build release binary
+        run: cargo build --release -p nekoui --locked
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: nekoui/target/release/nekoui*
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────
+  #  Build frontend (nekoui-gui)
+  # ──────────────────────────────────────────────
+  build-frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nekoui-gui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build frontend
+        run: bun run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: nekoui-gui/dist/
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────
+  #  Package everything into release archives
+  # ──────────────────────────────────────────────
+  package:
+    name: Package release archives
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+      is_prerelease: ${{ steps.version.outputs.IS_PRERELEASE }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+            IS_PRERELEASE="false"
+          else
+            VERSION="0.0.0-$(echo ${{ github.sha }} | cut -c1-7)"
+            IS_PRERELEASE="true"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "IS_PRERELEASE=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+      - name: Assemble archives
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          echo "Packaging version: ${VERSION}"
+
+          for PLATFORM in linux-x86_64 windows-x86_64 macos-x86_64; do
+            PACKAGE_DIR="nekoui-${VERSION}-${PLATFORM}"
+            mkdir -p "${PACKAGE_DIR}/gui"
+
+            # ── Copy binary (platform-aware) ──
+            BINARY_SRC="binary-${PLATFORM}"
+            if [ -f "${BINARY_SRC}/nekoui.exe" ]; then
+              cp "${BINARY_SRC}/nekoui.exe" "${PACKAGE_DIR}/"
+              echo "→ ${PLATFORM}: copied nekoui.exe"
+            elif [ -f "${BINARY_SRC}/nekoui" ]; then
+              cp "${BINARY_SRC}/nekoui" "${PACKAGE_DIR}/"
+              echo "→ ${PLATFORM}: copied nekoui"
+            else
+              echo "⚠ WARNING: No binary found for ${PLATFORM}"
+            fi
+
+            # ── Copy frontend dist ──
+            if [ -d "frontend-dist" ]; then
+              cp -r frontend-dist/* "${PACKAGE_DIR}/gui/"
+              echo "→ ${PLATFORM}: copied frontend dist"
+            else
+              echo "⚠ WARNING: frontend-dist not found"
+            fi
+
+            # ── Copy supporting files ──
+            for FILE in docker-compose.yml docker-settings.yml LICENSE README.md .env.example; do
+              if [ -f "${FILE}" ]; then
+                cp "${FILE}" "${PACKAGE_DIR}/"
+              fi
+            done
+
+            # ── Create archive ──
+            if [ "${PLATFORM}" = "windows-x86_64" ]; then
+              (cd "${PACKAGE_DIR}" && zip -r "../nekoui-${VERSION}-${PLATFORM}.zip" .)
+              ls -lh "nekoui-${VERSION}-${PLATFORM}.zip"
+            else
+              tar czf "nekoui-${VERSION}-${PLATFORM}.tar.gz" "${PACKAGE_DIR}"
+              ls -lh "nekoui-${VERSION}-${PLATFORM}.tar.gz"
+            fi
+          done
+
+      - name: Upload Linux/macOS packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-packages-unix
+          path: nekoui-*.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-packages-windows
+          path: nekoui-*.zip
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────
+  #  Create GitHub Release and attach assets
+  # ──────────────────────────────────────────────
+  release:
+    name: Publish GitHub Release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-packages-*
+          merge-multiple: true
+
+      - name: List release assets
+        run: ls -lh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.package.outputs.version }}
+          name: "NekoUI ${{ needs.package.outputs.version }}"
+          body: |
+            ## NekoUI ${{ needs.package.outputs.version }}
+
+            ### 📦 Included
+            - **nekoui** — Rust 製バックエンドバイナリ
+            - **gui/** — フロントエンドビルド成果物 (React + Vite)
+            - `docker-compose.yml` / `docker-settings.yml` — インフラ設定
+            - `.env.example` / `LICENSE` / `README.md`
+
+            ### 🚀 使い方
+            1. アーカイブを展開
+            2. `docker compose up -d` (Qdrant, Redis, SearXNG)
+            3. `.env.example` を `.env` にコピーして編集
+            4. `./nekoui start` で起動
+          draft: ${{ github.event_name != 'workflow_dispatch' }}
+          prerelease: ${{ needs.package.outputs.is_prerelease }}
+          files: |
+            nekoui-*.tar.gz
+            nekoui-*.zip
+          generate_release_notes: true

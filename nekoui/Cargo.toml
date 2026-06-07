@@ -10,7 +10,6 @@ license = "Apache-2.0"
 [workspace.dependencies]
 nekoui-agent = { path = "agent", package = "agent" }
 nekoui-api-server = { path = "api-server", package = "api-server" }
-nekoui-app = { path = "app", package = "app" }
 nekoui-config = { path = "config", package = "config" }
 nekoui-domain = { path = "domain", package = "domain" }
 nekoui-events = { path = "events", package = "events" }
