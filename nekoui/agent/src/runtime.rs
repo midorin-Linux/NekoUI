@@ -33,7 +33,7 @@ pub struct Agent {
 impl Agent {
     pub fn builder(config: Config) -> Result<AgentBuilder> {
         #[cfg(debug_assertions)]
-        let system_prompt_path = std::path::Path::new("..config");
+        let system_prompt_path = std::path::Path::new("../config");
 
         #[cfg(not(debug_assertions))]
         let system_prompt_path = std::path::Path::new("config");
