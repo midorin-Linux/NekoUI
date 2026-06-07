@@ -13,8 +13,6 @@ nekoui-wizard.workspace = true
 
 anyhow.workspace = true
 clap.workspace = true
-colored.workspace = true
 dialoguer.workspace = true
-indicatif.workspace = true
 tokio.workspace = true
 tracing.workspace = true
