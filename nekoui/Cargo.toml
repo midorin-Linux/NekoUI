@@ -21,6 +21,7 @@ nekoui-tools = { path = "tools", package = "tools" }
 nekoui-wizard = { path = "wizard", package = "wizard" }
 
 anyhow = "1.0"
+axum = { version = "0.8", features = ["ws"] }
 chrono = "0.4"
 clap = { version = "4.6", features = ["derive"] }
 colored = "3.1"
@@ -37,6 +38,7 @@ serde_json = "1.0"
 serde_yaml = "0.9"
 tokio = { version = "1.52", features = ["full"] }
 tokio-retry = "0.3"
+tower-http = { version = "0.6.11", features = ["cors"] }
 tracing = "0.1"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }

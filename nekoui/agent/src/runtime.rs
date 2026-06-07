@@ -131,4 +131,8 @@ impl Agent {
 
         Ok(AgentResponse { content })
     }
+
+    pub fn session_manager(&self) -> Arc<SessionManager> {
+        self.session_manager.clone()
+    }
 }

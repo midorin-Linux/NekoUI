@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 nekoui-agent.workspace = true
+nekoui-api-server.workspace = true
 nekoui-config.workspace = true
 nekoui-telemetry.workspace = true
 nekoui-wizard.workspace = true

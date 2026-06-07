@@ -5,3 +5,14 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+nekoui-agent.workspace = true
+nekoui-config.workspace = true
+nekoui-telemetry.workspace = true
+
+anyhow.workspace = true
+axum.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+serde.workspace = true
+uuid.workspace = true

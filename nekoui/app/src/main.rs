@@ -1,10 +1,12 @@
 pub mod commands;
+pub mod server;
 
 use std::process::ExitCode;
 
 use anyhow::{Result, bail};
 use clap::Command;
 use nekoui_agent::runtime::Agent;
+use nekoui_telemetry::{State, print_log};
 use tracing::{error, warn};
 
 fn cli() -> Command {
@@ -36,7 +38,14 @@ async fn run() -> Result<()> {
             let start_command = commands::start::StartCommand::new(sub_matches).await?;
 
             #[allow(unused)]
-            let runtime = Agent::builder(start_command.config)?.build()?;
+            let runtime = Agent::builder(start_command.config.clone())?.build()?;
+            print_log(State::Ok, "agent runtime initialized");
+
+            let server = server::ChatClient::initialize(&start_command.config, runtime).await?;
+            print_log(State::Ok, "server initialized");
+
+            server.run().await?;
+
             Ok(())
         }
         _ => {

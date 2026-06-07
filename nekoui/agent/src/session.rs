@@ -7,6 +7,7 @@ use nekoui_domain::session::SessionKey;
 use rig::completion::Message;
 use tokio::sync::Mutex;
 use tracing::debug;
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct ConversationTurn {
@@ -118,5 +119,16 @@ impl SessionManager {
                 debug!(target_session = %session_key.conversation_id, "non-existent session");
                 anyhow::anyhow!("session not found")
             })
+    }
+
+    pub fn create_session_key(&self) -> SessionKey {
+        let mut session_key = SessionKey::new(Uuid::new_v4(), None);
+
+        while self.sessions.contains_key(&session_key) {
+            debug!(session = %session_key.conversation_id, "collision detected, generating new session key");
+            session_key = SessionKey::new(Uuid::new_v4(), None);
+        }
+
+        session_key
     }
 }
