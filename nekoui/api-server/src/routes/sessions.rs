@@ -156,3 +156,27 @@ pub async fn patch_session(
         }
     }
 }
+
+pub async fn delete_session(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    let session_key = match state.http_state.agent.session_manager().get_session_key(id) {
+        Ok(key) => key,
+        Err(_) => {
+            return ApiResponse::error(
+                StatusCode::BAD_REQUEST,
+                "INVALID_SESSION_ID",
+                "Invalid session id",
+            );
+        }
+    };
+
+    state
+        .http_state
+        .agent
+        .session_manager()
+        .delete_session(session_key)
+        .await;
+    ApiResponse::success(())
+}

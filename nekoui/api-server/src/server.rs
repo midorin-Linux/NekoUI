@@ -55,7 +55,9 @@ impl HttpServer {
             )
             .route(
                 "/sessions/{id}",
-                get(sessions::get_session).patch(sessions::patch_session),
+                get(sessions::get_session)
+                    .patch(sessions::patch_session)
+                    .delete(sessions::delete_session),
             )
             .with_state(app_state);
 
