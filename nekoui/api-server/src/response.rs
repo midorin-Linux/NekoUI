@@ -10,6 +10,8 @@ pub struct ApiResponse<T> {
     pub success: bool,
     pub data: Option<T>,
     pub error: Option<ApiErrorDetail>,
+    #[serde(skip)]
+    pub status: StatusCode,
 }
 
 #[derive(Debug, Serialize)]
@@ -24,10 +26,11 @@ impl<T> ApiResponse<T> {
             success: true,
             data: Some(data),
             error: None,
+            status: StatusCode::OK,
         }
     }
 
-    pub fn error(code: impl Into<String>, message: impl Into<String>) -> Self {
+    pub fn error(status: StatusCode, code: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             success: false,
             data: None,
@@ -35,6 +38,7 @@ impl<T> ApiResponse<T> {
                 code: code.into(),
                 message: message.into(),
             }),
+            status,
         }
     }
 }
@@ -44,7 +48,7 @@ where
     T: Serialize,
 {
     fn into_response(self) -> Response {
-        (StatusCode::OK, Json(self)).into_response()
+        (self.status, Json(self)).into_response()
     }
 }
 
@@ -56,8 +60,7 @@ pub struct AppError {
 }
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let body: ApiResponse<()> = ApiResponse::error(&self.code, &self.message);
-        (self.status, Json(body)).into_response()
+        ApiResponse::<()>::error(self.status, &self.code, &self.message).into_response()
     }
 }
 

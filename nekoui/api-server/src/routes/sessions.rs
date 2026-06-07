@@ -1,4 +1,4 @@
-use axum::{extract::{Path, State}, response::IntoResponse};
+use axum::{extract::{Path, State}, http::StatusCode, response::IntoResponse};
 use serde::Serialize;
 use tracing::debug;
 use crate::{response::ApiResponse, routes::AppState};
@@ -60,7 +60,7 @@ pub async fn get_session(State(state): State<AppState>, Path(id): Path<String>) 
     let session_key = match state.http_state.agent.session_manager().get_session_key(id){
         Ok(key) => key,
         Err(_) => {
-            return ApiResponse::error("400 Bad Request", "Invalid session id")
+            return ApiResponse::error(StatusCode::BAD_REQUEST, "INVALID_SESSION_ID", "Invalid session id")
         },
     };
 
@@ -78,7 +78,7 @@ pub async fn get_session(State(state): State<AppState>, Path(id): Path<String>) 
         },
         Err(e) => {
             debug!("Session not found: {:?}", e);
-            ApiResponse::error("404 Not Found", "Session not found")
+            ApiResponse::error(StatusCode::NOT_FOUND, "SESSION_NOT_FOUND", "Session not found")
         }
     }
 }
