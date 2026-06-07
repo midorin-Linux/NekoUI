@@ -41,15 +41,17 @@ pub async fn list_sessions(State(state): State<AppState>) -> impl IntoResponse {
     for key in all_session_keys {
         if let Ok(session) = state.http_state.agent.session_manager().get(&key) {
             let session_guard = session.lock().await;
-            sessions.push(SessionListItem {
+            sessions.push((session_guard.last_active, SessionListItem {
                 session_id: key.conversation_id.to_string(),
                 title: session_guard.title.clone(),
                 created_at: session_guard.created_at.to_string(),
                 last_active: session_guard.last_active.to_string(),
                 message_turns: session_guard.messages.len(),
-            });
+            }));
         }
     }
 
-    ApiResponse::success(sessions)
+    sessions.sort_by(|a, b| b.0.cmp(&a.0));
+
+    ApiResponse::success(sessions.into_iter().map(|(_, item)| item).collect::<Vec<_>>())
 }
