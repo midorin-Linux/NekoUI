@@ -95,3 +95,24 @@ jobs:
       - name: Cargo audit
         run: cargo audit
         working-directory: nekoui
+
+  gui-lint:
+    name: gui lint & build (nekoui-gui)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nekoui-gui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: Build
+        run: bun run build
