@@ -53,6 +53,10 @@ impl HttpServer {
                 "/sessions",
                 get(sessions::list_sessions).post(sessions::create_session),
             )
+            .route(
+                "/sessions/{id}",
+                get(sessions::get_session),
+            )
             .with_state(app_state);
 
         Router::new().nest("/api/v1", api_router).layer(cors)

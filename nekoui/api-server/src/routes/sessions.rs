@@ -1,6 +1,6 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{extract::{Path, State}, response::IntoResponse};
 use serde::Serialize;
-
+use tracing::debug;
 use crate::{response::ApiResponse, routes::AppState};
 
 #[derive(Serialize)]
@@ -54,4 +54,31 @@ pub async fn list_sessions(State(state): State<AppState>) -> impl IntoResponse {
     sessions.sort_by(|a, b| b.0.cmp(&a.0));
 
     ApiResponse::success(sessions.into_iter().map(|(_, item)| item).collect::<Vec<_>>())
+}
+
+pub async fn get_session(State(state): State<AppState>, Path(id): Path<String>) -> impl IntoResponse {
+    let session_key = match state.http_state.agent.session_manager().get_session_key(id){
+        Ok(key) => key,
+        Err(_) => {
+            return ApiResponse::error("400 Bad Request", "Invalid session id")
+        },
+    };
+
+    match state.http_state.agent.session_manager().get(&session_key) {
+        Ok(session) => {
+            let session_guard = session.lock().await;
+            let session_info = SessionListItem {
+                session_id: session_key.conversation_id.to_string(),
+                title: session_guard.title.clone(),
+                created_at: session_guard.created_at.to_string(),
+                last_active: session_guard.last_active.to_string(),
+                message_turns: session_guard.messages.len(),
+            };
+            ApiResponse::success(session_info)
+        },
+        Err(e) => {
+            debug!("Session not found: {:?}", e);
+            ApiResponse::error("404 Not Found", "Session not found")
+        }
+    }
 }

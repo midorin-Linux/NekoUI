@@ -133,4 +133,12 @@ impl SessionManager {
 
         session_key
     }
+
+    pub fn get_session_key(&self, uuid: String) -> Result<SessionKey> {
+        let uuid = match uuid.parse() {
+            Ok(uuid) => uuid,
+            Err(_) => Err(anyhow::anyhow!("invalid uuid"))?,
+        };
+        Ok(SessionKey::new(uuid, None))
+    }
 }

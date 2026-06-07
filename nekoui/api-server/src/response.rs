@@ -26,8 +26,7 @@ impl<T> ApiResponse<T> {
             error: None,
         }
     }
-}
-impl ApiResponse<()> {
+
     pub fn error(code: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             success: false,
@@ -57,7 +56,7 @@ pub struct AppError {
 }
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let body = ApiResponse::error(&self.code, &self.message);
+        let body: ApiResponse<()> = ApiResponse::error(&self.code, &self.message);
         (self.status, Json(body)).into_response()
     }
 }
