@@ -3,10 +3,10 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
-    SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction
+    SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction, SidebarTrigger
 } from "@/components/ui/sidebar.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {SquarePen, Trash2, MoreVertical, Pencil} from "lucide-react"
+import {SquarePen, Trash2, MoreVertical, Pencil, MessageSquare, Settings} from "lucide-react"
 import {Separator} from "@/components/ui/separator.tsx";
 import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
@@ -30,6 +30,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog.tsx"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -94,149 +99,138 @@ export default function ChatSidebar() {
     }, []);
 
     return (
-        <Sidebar>
+        <Sidebar collapsible="icon">
             <SidebarHeader>
-                <h1 className="scroll-m-20 p-2 text-xl tracking-wide">NekoUI</h1>
-                <Button variant={"ghost"} onClick={handleNewChatClick} className="hover:bg-primary/10 cursor-pointer justify-start gap-3">
-                    <SquarePen />
-                    <p className="font-light">New Chat</p>
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <SidebarTrigger size={"icon"} className="hover:bg-primary/10" />
+                    </TooltipTrigger>
+                    <TooltipContent side={"right"}>Toggle sidebar</TooltipContent>
+                </Tooltip>
+                <h1 className="scroll-m-20 p-2 text-xl tracking-wide group-data-[collapsible=icon]:hidden">NekoUI</h1>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            onClick={handleNewChatClick}
+                            tooltip={"Create a session"}
+                            className="hover:bg-primary/10 cursor-pointer"
+                        >
+                            <SquarePen />
+                            <span className="font-light group-data-[collapsible=icon]:hidden">New Chat</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarHeader>
-            <Separator />
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarMenu className="gap-0.5">
-                        {sessionList.map((session) => (
-                            <SidebarMenuItem key={session.session_id} className="group/session">
-                                <SidebarMenuButton
-                                    asChild
-                                    className={`w-full pl-2 pr-9 cursor-pointer transition-all ${
-                                        session.session_id === sessionId
-                                            ? "bg-primary/10 hover:bg-primary/10 group-hover/session:bg-primary/10 font-medium"
-                                            : "hover:bg-primary/10 group-hover/session:bg-primary/10"
-                                    }`}
-                                >
-                                    <a onClick={() => navigate(`/sessions/${session.session_id}`)}>{session.title}</a>
-                                </SidebarMenuButton>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <SidebarMenuAction showOnHover>
-                                            <MoreVertical />
-                                            <span className="sr-only">More</span>
-                                        </SidebarMenuAction>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-48 rounded-lg">
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setRenameTarget(session); setRenameTitle(session.title); setRenameDialogOpen(true); }}>
-                                                <Pencil className="text-muted-foreground" />
-                                                <span>Rename</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem variant="destructive" onSelect={(e) => { e.preventDefault(); setDeleteTarget(session.session_id); setAlertOpen(true); }}>
-                                                <Trash2 />
-                                                <span>Delete</span>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </SidebarMenuItem>
-                        ))}
-                        {/*{sessionList.map((session) => (*/}
-                        {/*    <SidebarMenuItem key={session.session_id} className="group/session">*/}
-                        {/*        <SidebarMenuButton*/}
-                        {/*            onClick={() => navigate(`/sessions/${session.session_id}`)}*/}
-                        {/*            className={`w-full pl-2 pr-9 cursor-pointer transition-all ${*/}
-                        {/*                session.session_id === sessionId*/}
-                        {/*                    ? "bg-primary/10 hover:bg-primary/10 group-hover/session:bg-primary/10 font-medium"*/}
-                        {/*                    : "hover:bg-primary/10 group-hover/session:bg-primary/10"*/}
-                        {/*            }`}*/}
-                        {/*        >*/}
-                        {/*            <span className="font-light truncate">{session.title}</span>*/}
-                        {/*        </SidebarMenuButton>*/}
-
-                        {/*        <DropdownMenu>*/}
-                        {/*            <DropdownMenuTrigger>*/}
-                        {/*                <SidebarMenuAction*/}
-                        {/*                    showOnHover*/}
-                        {/*                    onClick={(e) => {*/}
-                        {/*                        e.stopPropagation();*/}
-                        {/*                    }}*/}
-                        {/*                >*/}
-                        {/*                    <Trash2 />*/}
-                        {/*                </SidebarMenuAction>*/}
-                        {/*            </DropdownMenuTrigger>*/}
-                        {/*            <DropdownMenuContent className="w-40" align="start">*/}
-                        {/*                <DropdownMenuItem>Rename</DropdownMenuItem>*/}
-                        {/*                <Separator className="my-1" />*/}
-                        {/*                <DropdownMenuItem className="text-red-700">Delete</DropdownMenuItem>*/}
-                        {/*            </DropdownMenuContent>*/}
-                        {/*        </DropdownMenu>*/}
-                        {/*    </SidebarMenuItem>*/}
-                        {/*))}*/}
-                    </SidebarMenu>
-                </SidebarGroup>
-            </SidebarContent>
-            <Separator />
-            <SidebarFooter className="p-1">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="hover:bg-primary/10">Settings</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-70" align="start">
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>Language</DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem>English</DropdownMenuItem>
-                                        <DropdownMenuItem>日本語</DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-                            <DropdownMenuItem>Help</DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>logout</DropdownMenuItem>
-                        </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </SidebarFooter>
-            <AlertDialog open={alertOpen} onOpenChange={(open) => { setAlertOpen(open); if (!open) setDeleteTarget(null); }}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete this session.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction variant={"destructive"} onClick={() => deleteTarget && handleDeleteSessionClick(deleteTarget)}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            <Dialog open={renameDialogOpen} onOpenChange={(open) => { setRenameDialogOpen(open); if (!open) setRenameTarget(null); }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Rename Session</DialogTitle>
-                        <DialogDescription>Enter a new name for this session.</DialogDescription>
-                    </DialogHeader>
-                    <Input
-                        value={renameTitle}
-                        onChange={(e) => setRenameTitle(e.target.value)}
-                        placeholder="Session name"
-                        onKeyDown={(e) => { if (e.key === "Enter" && renameTarget) handleRenameSessionClick(renameTarget.session_id, renameTitle); }}
-                    />
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => { setRenameDialogOpen(false); setRenameTarget(null); }}>Cancel</Button>
-                        <Button onClick={() => renameTarget && handleRenameSessionClick(renameTarget.session_id, renameTitle)}>Save</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </Sidebar>
-    )
+             <Separator />
+             <SidebarContent>
+                 <SidebarGroup>
+                     <SidebarMenu className="gap-0.5">
+                         {sessionList.map((session) => (
+                             <SidebarMenuItem key={session.session_id} className="group/session">
+                                 <SidebarMenuButton
+                                     asChild
+                                     tooltip={session.title}
+                                     className={`w-full pl-2 pr-9 cursor-pointer transition-all ${
+                                         session.session_id === sessionId
+                                             ? "bg-primary/10 hover:bg-primary/10 group-hover/session:bg-primary/10 font-medium"
+                                             : "hover:bg-primary/10 group-hover/session:bg-primary/10"
+                                     }`}
+                                 >
+                                     <a onClick={() => navigate(`/sessions/${session.session_id}`)}>
+                                         <MessageSquare />
+                                         <span className="font-light truncate group-data-[collapsible=icon]:hidden">{session.title}</span>
+                                     </a>
+                                 </SidebarMenuButton>
+                                 <DropdownMenu>
+                                     <DropdownMenuTrigger asChild>
+                                         <SidebarMenuAction showOnHover>
+                                             <MoreVertical />
+                                             <span className="sr-only">More</span>
+                                         </SidebarMenuAction>
+                                     </DropdownMenuTrigger>
+                                     <DropdownMenuContent className="w-48 rounded-lg">
+                                         <DropdownMenuGroup>
+                                             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setRenameTarget(session); setRenameTitle(session.title); setRenameDialogOpen(true); }}>
+                                                 <Pencil className="text-muted-foreground" />
+                                                 <span>Rename</span>
+                                             </DropdownMenuItem>
+                                         </DropdownMenuGroup>
+                                         <DropdownMenuSeparator />
+                                         <DropdownMenuGroup>
+                                             <DropdownMenuItem variant="destructive" onSelect={(e) => { e.preventDefault(); setDeleteTarget(session.session_id); setAlertOpen(true); }}>
+                                                 <Trash2 />
+                                                 <span>Delete</span>
+                                             </DropdownMenuItem>
+                                         </DropdownMenuGroup>
+                                     </DropdownMenuContent>
+                                 </DropdownMenu>
+                             </SidebarMenuItem>
+                         ))}
+                     </SidebarMenu>
+                 </SidebarGroup>
+             </SidebarContent>
+             <Separator />
+             <SidebarFooter className="p-1">
+                 <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                         <Button variant="ghost" className="hover:bg-primary/10">
+                             <Settings />
+                             <span className="group-data-[collapsible=icon]:hidden">Settings</span>
+                         </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent className="w-70" align="start">
+                         <DropdownMenuGroup>
+                             <DropdownMenuItem>Settings</DropdownMenuItem>
+                             <DropdownMenuSub>
+                                 <DropdownMenuSubTrigger>Language</DropdownMenuSubTrigger>
+                                 <DropdownMenuPortal>
+                                     <DropdownMenuSubContent>
+                                         <DropdownMenuItem>English</DropdownMenuItem>
+                                         <DropdownMenuItem>日本語</DropdownMenuItem>
+                                     </DropdownMenuSubContent>
+                                 </DropdownMenuPortal>
+                             </DropdownMenuSub>
+                             <DropdownMenuItem>Help</DropdownMenuItem>
+                         </DropdownMenuGroup>
+                         <DropdownMenuSeparator />
+                         <DropdownMenuGroup>
+                             <DropdownMenuItem>logout</DropdownMenuItem>
+                         </DropdownMenuGroup>
+                     </DropdownMenuContent>
+                 </DropdownMenu>
+             </SidebarFooter>
+             <AlertDialog open={alertOpen} onOpenChange={(open) => { setAlertOpen(open); if (!open) setDeleteTarget(null); }}>
+                 <AlertDialogContent>
+                     <AlertDialogHeader>
+                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                         <AlertDialogDescription>
+                             This action cannot be undone. This will permanently delete this session.
+                         </AlertDialogDescription>
+                     </AlertDialogHeader>
+                     <AlertDialogFooter>
+                         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                         <AlertDialogAction variant={"destructive"} onClick={() => deleteTarget && handleDeleteSessionClick(deleteTarget)}>Delete</AlertDialogAction>
+                     </AlertDialogFooter>
+                 </AlertDialogContent>
+             </AlertDialog>
+             <Dialog open={renameDialogOpen} onOpenChange={(open) => { setRenameDialogOpen(open); if (!open) setRenameTarget(null); }}>
+                 <DialogContent>
+                     <DialogHeader>
+                         <DialogTitle>Rename Session</DialogTitle>
+                         <DialogDescription>Enter a new name for this session.</DialogDescription>
+                     </DialogHeader>
+                     <Input
+                         value={renameTitle}
+                         onChange={(e) => setRenameTitle(e.target.value)}
+                         placeholder="Session name"
+                         onKeyDown={(e) => { if (e.key === "Enter" && renameTarget) handleRenameSessionClick(renameTarget.session_id, renameTitle); }}
+                     />
+                     <DialogFooter>
+                         <Button variant="outline" onClick={() => { setRenameDialogOpen(false); setRenameTarget(null); }}>Cancel</Button>
+                         <Button onClick={() => renameTarget && handleRenameSessionClick(renameTarget.session_id, renameTitle)}>Save</Button>
+                     </DialogFooter>
+                 </DialogContent>
+             </Dialog>
+         </Sidebar>
+     )
 }
