@@ -1,13 +1,26 @@
 use axum::{
-    Json,
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
+    routing::get,
 };
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
-use crate::{response::ApiResponse, routes::AppState};
+use crate::{
+    response::ApiResponse,
+    routes::{AppState, extractor::ResolvedSession},
+};
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/", get(list_sessions).post(create_session))
+        .route(
+            "/{id}",
+            get(get_session).patch(patch_session).delete(delete_session),
+        )
+}
 
 #[derive(Serialize)]
 struct SessionListItem {
@@ -70,42 +83,16 @@ pub async fn list_sessions(State(state): State<AppState>) -> impl IntoResponse {
     )
 }
 
-pub async fn get_session(
-    State(state): State<AppState>,
-    Path(id): Path<String>,
-) -> impl IntoResponse {
-    let session_key = match state.http_state.agent.session_manager().get_session_key(id) {
-        Ok(key) => key,
-        Err(_) => {
-            return ApiResponse::error(
-                StatusCode::BAD_REQUEST,
-                "INVALID_SESSION_ID",
-                "Invalid session id",
-            );
-        }
+pub async fn get_session(resolved: ResolvedSession) -> impl IntoResponse {
+    let guard = resolved.session.lock().await;
+    let session_info = SessionListItem {
+        session_id: resolved.key.conversation_id.to_string(),
+        title: guard.title.clone(),
+        created_at: guard.created_at.to_string(),
+        last_active: guard.last_active.to_string(),
+        message_turns: guard.messages.len(),
     };
-
-    match state.http_state.agent.session_manager().get(&session_key) {
-        Ok(session) => {
-            let session_guard = session.lock().await;
-            let session_info = SessionListItem {
-                session_id: session_key.conversation_id.to_string(),
-                title: session_guard.title.clone(),
-                created_at: session_guard.created_at.to_string(),
-                last_active: session_guard.last_active.to_string(),
-                message_turns: session_guard.messages.len(),
-            };
-            ApiResponse::success(session_info)
-        }
-        Err(e) => {
-            debug!("Session not found: {:?}", e);
-            ApiResponse::error(
-                StatusCode::NOT_FOUND,
-                "SESSION_NOT_FOUND",
-                "Session not found",
-            )
-        }
-    }
+    ApiResponse::success(session_info)
 }
 
 #[derive(Deserialize)]

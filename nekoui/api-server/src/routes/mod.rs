@@ -1,5 +1,6 @@
 use crate::server::HttpServerState;
 
+pub mod extractor;
 pub mod messages;
 pub mod models;
 pub mod providers;

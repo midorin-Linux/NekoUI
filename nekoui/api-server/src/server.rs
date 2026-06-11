@@ -5,8 +5,10 @@ use nekoui_agent::runtime::Agent;
 use nekoui_config::server::ServerConfig;
 use nekoui_telemetry::{State, print_log};
 
-use super::routes::*;
-use crate::{cors::build_cors_layer, routes::AppState};
+use crate::{
+    cors::build_cors_layer,
+    routes::{AppState, messages, models, providers, search, sessions, settings},
+};
 
 #[derive(Clone)]
 pub struct HttpServerState {
@@ -49,17 +51,12 @@ impl HttpServer {
 
         let api_router = Router::new()
             .route("/health", get(StatusCode::OK))
-            .route(
-                "/sessions",
-                get(sessions::list_sessions).post(sessions::create_session),
-            )
-            .route(
-                "/sessions/{id}",
-                get(sessions::get_session)
-                    .patch(sessions::patch_session)
-                    .delete(sessions::delete_session),
-            )
-            .route("/sessions/{id}/messages", get(messages::get_messages))
+            .nest("/sessions", sessions::router())
+            .nest("/sessions/{id}/messages", messages::router())
+            .nest("/models", models::router())
+            .nest("/providers", providers::router())
+            .nest("/search", search::router())
+            .nest("/settings", settings::router())
             .with_state(app_state);
 
         Router::new().nest("/api/v1", api_router).layer(cors)
