@@ -4,10 +4,18 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use dashmap::DashMap;
 use nekoui_domain::session::SessionKey;
-use rig::completion::Message;
+use serde::Serialize;
 use tokio::sync::Mutex;
 use tracing::debug;
 use uuid::Uuid;
+
+#[derive(Clone, Serialize)]
+pub struct Message {
+    pub id: String,
+    pub role: String,
+    pub content: String,
+    pub created_at: String,
+}
 
 #[derive(Clone)]
 pub struct ConversationTurn {
@@ -49,13 +57,24 @@ impl SessionManager {
         let max_messages = self.max_messages;
         let session_arc = self.get_or_create(session_key);
         let mut session = session_arc.lock().await;
+        let now = Utc::now().to_rfc3339();
 
         session.turns.push_back(ConversationTurn {
             user: user.to_string(),
             assistant: assistant.to_string(),
         });
-        session.messages.push_back(Message::user(user));
-        session.messages.push_back(Message::assistant(assistant));
+        session.messages.push_back(Message {
+            id: Uuid::new_v4().to_string(),
+            role: "user".to_string(),
+            content: user.to_string(),
+            created_at: now.clone(),
+        });
+        session.messages.push_back(Message {
+            id: Uuid::new_v4().to_string(),
+            role: "assistant".to_string(),
+            content: assistant.to_string(),
+            created_at: now,
+        });
 
         while session.messages.len() > max_messages {
             session.messages.pop_front();

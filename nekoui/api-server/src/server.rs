@@ -59,6 +59,7 @@ impl HttpServer {
                     .patch(sessions::patch_session)
                     .delete(sessions::delete_session),
             )
+            .route("/sessions/{id}/messages", get(messages::get_messages))
             .with_state(app_state);
 
         Router::new().nest("/api/v1", api_router).layer(cors)
