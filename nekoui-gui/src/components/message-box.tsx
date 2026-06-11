@@ -1,4 +1,6 @@
-import { useRef } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {Plus, Send, Image, Files, Camera} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,15 +12,34 @@ import {Switch} from "@/components/ui/switch.tsx";
 
 const placeholder = "Ask Anything...";
 
+const messageFormSchema = z.object({
+    message: z.string().trim().min(1, "メッセージを入力してください"),
+});
+
+type MessageFormValues = z.infer<typeof messageFormSchema>;
+
 export default function MessageBox() {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const {
+        register,
+        handleSubmit,
+        formState: { isValid, isSubmitting },
+    } = useForm<MessageFormValues>({
+        mode: "onChange",
+        resolver: zodResolver(messageFormSchema),
+        defaultValues: {
+            message: "",
+        },
+    });
 
     return (
-        <div className="rounded-2xl border p-2 h-26 text-sm w-full bg-white hover:border-gray-300">
+        <form
+            className="rounded-2xl border p-2 h-26 text-sm w-full bg-white hover:border-gray-300"
+            onSubmit={handleSubmit(() => {})}
+        >
             <Textarea
-                ref={textareaRef}
                 placeholder={placeholder}
                 className="border-none shadow-none focus-visible:ring-0 pb-0 resize-none min-h-10 max-h-50 overflow-y-auto"
+                {...register("message")}
             />
 
             <div className="flex justify-between">
@@ -53,39 +74,13 @@ export default function MessageBox() {
                             </section>
                         </PopoverContent>
                     </Popover>
-                    {/*<DropdownMenu>*/}
-                    {/*    <DropdownMenuTrigger asChild>*/}
-                    {/*        <Button variant="ghost" className="hover:bg-primary/10 size-9 rounded-xl">*/}
-                    {/*            <Plus />*/}
-                    {/*        </Button>*/}
-                    {/*    </DropdownMenuTrigger>*/}
-                    {/*    <DropdownMenuContent className="w-70" align="start">*/}
-                    {/*        <DropdownMenuGroup>*/}
-                    {/*            <DropdownMenuItem>Settings</DropdownMenuItem>*/}
-                    {/*            <DropdownMenuSub>*/}
-                    {/*                <DropdownMenuSubTrigger>Language</DropdownMenuSubTrigger>*/}
-                    {/*                <DropdownMenuPortal>*/}
-                    {/*                    <DropdownMenuSubContent>*/}
-                    {/*                        <DropdownMenuItem>English</DropdownMenuItem>*/}
-                    {/*                        <DropdownMenuItem>日本語</DropdownMenuItem>*/}
-                    {/*                    </DropdownMenuSubContent>*/}
-                    {/*                </DropdownMenuPortal>*/}
-                    {/*            </DropdownMenuSub>*/}
-                    {/*            <DropdownMenuItem>Help</DropdownMenuItem>*/}
-                    {/*        </DropdownMenuGroup>*/}
-                    {/*        <DropdownMenuSeparator />*/}
-                    {/*        <DropdownMenuGroup>*/}
-                    {/*            <DropdownMenuItem>logout</DropdownMenuItem>*/}
-                    {/*        </DropdownMenuGroup>*/}
-                    {/*    </DropdownMenuContent>*/}
-                    {/*</DropdownMenu>*/}
                 </div>
                 <div className="flex">
-                    <Button className="size-9 rounded-xl" type="button">
-                        <Send />
-                    </Button>
-                </div>
-            </div>
-        </div>
+                    <Button className="size-9 rounded-xl" type="submit" disabled={!isValid || isSubmitting}>
+                         <Send />
+                     </Button>
+                 </div>
+             </div>
+        </form>
     );
 }

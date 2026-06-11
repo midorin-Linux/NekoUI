@@ -16,7 +16,7 @@ function App() {
     <>
       <SidebarProvider>
         <ChatSidebar />
-        <main className="w-full bg-white relative h-screen flex flex-col">
+        <main className="w-full bg-white relative h-screen max-w-4xl mx-auto flex flex-col">
           <div className={messageBoxWrapperClassName}>
             <div className={`${ isHomePage ? "" : "hidden"}`}>
               <h1 className="scroll-m-20 text-center text-5xl tracking-tight text-balance mb-10">Hello!</h1>
