@@ -1337,7 +1337,7 @@ Repository Interface（共通）
 ### SQLite テーブル設計（移行時の参考）
 
 ```sql
-users             : id, email, display_name, password_hash, avatar_url, created_at
+users             : id, user_id, email, display_name, password_hash, avatar_url, created_at
 refresh_tokens    : id, user_id, token_hash, expires_at, revoked, created_at
 sessions          : id, user_id, title, model_id, system_prompt, folder_id, pinned,
                     branch_from_session, branch_from_message, created_at, updated_at

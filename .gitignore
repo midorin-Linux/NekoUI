@@ -4,3 +4,6 @@
 config/
 logs/
 nekoui.md
+nekoui.db*
+
+nekoui/target/

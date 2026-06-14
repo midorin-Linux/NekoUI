@@ -1,6 +1,0 @@
-target
-logs
-.config/config.toml
-.config/mcp.json
-**/*.rs.bk
-*.pdb
