@@ -23,19 +23,19 @@ impl AuthService {
         }
     }
 
-    pub async fn register(&self, user_record: &UserRecord) -> Result<()> {
+    pub async fn register(&self, user_record: &UserRecord) -> Result<UserRecord> {
         let is_exists = self.user_repo.get_by_email(&user_record.email).await?;
 
         if is_exists.is_some() {
             Err(anyhow::anyhow!("user already exists"))
         } else {
-            let result = self.user_repo.create(user_record).await?;
+            let result = self
+                .user_repo
+                .create(user_record)
+                .await?
+                .ok_or_else(|| anyhow::anyhow!("failed to create user"))?;
 
-            if result.rows_affected() == 0 {
-                Err(anyhow::anyhow!("failed to create user"))
-            } else {
-                Ok(())
-            }
+            Ok(result)
         }
     }
 

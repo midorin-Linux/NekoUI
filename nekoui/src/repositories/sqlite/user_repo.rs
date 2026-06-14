@@ -43,11 +43,15 @@ impl User {
         Ok(result)
     }
 
-    pub async fn create(&self, user_record: &UserRecord) -> Result<SqliteQueryResult, sqlx::Error> {
-        let result = sqlx::query(
+    pub async fn create(
+        &self,
+        user_record: &UserRecord,
+    ) -> Result<Option<UserRecord>, sqlx::Error> {
+        let result = sqlx::query_as::<_, UserRecord>(
             r#"
                 INSERT INTO users (user_id, email, display_name, password_hash, avatar_url, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
+                RETURNING *;
             "#
         )
             .bind(&user_record.user_id)
@@ -56,7 +60,7 @@ impl User {
             .bind(&user_record.password_hash)
             .bind(&user_record.avatar_url)
             .bind(user_record.created_at)
-            .execute(&self.sqlite_pool)
+            .fetch_optional(&self.sqlite_pool)
             .await?;
 
         Ok(result)
