@@ -13,21 +13,15 @@ impl User {
         Self { sqlite_pool }
     }
 
-    pub async fn get(
-        &self,
-        email: &str,
-        password_hash: &str,
-    ) -> Result<Option<UserRecord>, sqlx::Error> {
+    pub async fn get_by_email(&self, email: &str) -> Result<Option<UserRecord>, sqlx::Error> {
         let result = sqlx::query_as::<_, UserRecord>(
             r#"
                 SELECT id, user_id, email, display_name, password_hash, avatar_url, created_at
                 FROM users
                 WHERE email = ?
-                  AND password_hash = ?
                 "#,
         )
         .bind(email)
-        .bind(password_hash)
         .fetch_optional(&self.sqlite_pool)
         .await?;
 

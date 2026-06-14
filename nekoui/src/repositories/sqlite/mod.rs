@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use sqlx::{Pool, Sqlite, sqlite::SqlitePoolOptions};
 
-use crate::repositories::sqlite::refresh_token_repo::RefreshToken;
-use crate::repositories::sqlite::user_repo::User;
+use crate::repositories::sqlite::{refresh_token_repo::RefreshToken, user_repo::User};
 
 pub mod refresh_token_repo;
 pub mod user_repo;

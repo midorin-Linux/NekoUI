@@ -1,10 +1,11 @@
-use crate::models::refresh_token::RefreshTokenRecord;
-use crate::models::user::UserRecord;
-use crate::repositories::sqlite::{
-    SqliteRepository, refresh_token_repo::RefreshToken, user_repo::User,
-};
-use anyhow::Result;
 use std::sync::Arc;
+
+use anyhow::Result;
+
+use crate::{
+    models::{refresh_token::RefreshTokenRecord, user::UserRecord},
+    repositories::sqlite::{SqliteRepository, refresh_token_repo::RefreshToken, user_repo::User},
+};
 
 pub struct AuthService {
     pub refresh_token_repo: Arc<RefreshToken>,
@@ -23,48 +24,42 @@ impl AuthService {
     }
 
     pub async fn register(&self, user_record: &UserRecord) -> Result<()> {
-        let is_exists = self
-            .user_repo
-            .get(&user_record.email, &user_record.password_hash)
-            .await?;
+        let is_exists = self.user_repo.get_by_email(&user_record.email).await?;
 
         if is_exists.is_some() {
             Err(anyhow::anyhow!("user already exists"))
         } else {
-            self.user_repo.create(user_record).await?;
-            Ok(())
+            let result = self.user_repo.create(user_record).await?;
+
+            if result.rows_affected() == 0 {
+                Err(anyhow::anyhow!("failed to create user"))
+            } else {
+                Ok(())
+            }
         }
     }
 
     pub async fn login(&self, user_record: &UserRecord) -> Result<RefreshTokenRecord> {
-        let is_exists = self
+        let user = self
             .user_repo
-            .get(&user_record.email, &user_record.password_hash)
-            .await?;
+            .get_by_email(&user_record.email)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("user not found"))?;
 
-        if !is_exists.is_some() {
-            Err(anyhow::anyhow!("user not found"))
-        } else {
-            let token = match self.refresh_token_repo.validate(&user_record.user_id).await {
-                Ok(token) => {
-                    if token.is_none() {
-                        match self.refresh_token_repo.generate(&user_record.user_id).await {
-                            Ok(new_token) => new_token.unwrap(),
-                            Err(err) => {
-                                return Err(err.into());
-                            }
-                        }
-                    } else {
-                        token.unwrap()
-                    }
-                }
-                Err(err) => {
-                    return Err(err.into());
-                }
-            };
-
-            Ok(token)
+        if user.password_hash != user_record.password_hash {
+            return Err(anyhow::anyhow!("password mismatch"));
         }
+
+        let token = match self.refresh_token_repo.get(&user.user_id).await? {
+            Some(token) => token,
+            None => self
+                .refresh_token_repo
+                .generate(&user.user_id)
+                .await?
+                .ok_or_else(|| anyhow::anyhow!("failed to generate refresh token"))?,
+        };
+
+        Ok(token)
     }
 
     pub async fn refresh(&self, token_hash: &str) -> Result<RefreshTokenRecord> {
