@@ -1,7 +1,10 @@
 use anyhow::Result;
 use sqlx::sqlite::SqliteQueryResult;
 
-use crate::models::user::UserRecord;
+use crate::{
+    api::routes::auth::UpdateRequest,
+    models::user::{UserRecord, UserRecordRequest},
+};
 
 #[derive(Clone)]
 pub struct User {
@@ -45,7 +48,7 @@ impl User {
 
     pub async fn create(
         &self,
-        user_record: &UserRecord,
+        user_record: &UserRecordRequest,
     ) -> Result<Option<UserRecord>, sqlx::Error> {
         let result = sqlx::query_as::<_, UserRecord>(
             r#"
@@ -86,18 +89,21 @@ impl User {
         Ok(result)
     }
 
-    pub async fn update(&self, user_record: UserRecord) -> Result<SqliteQueryResult, sqlx::Error> {
+    pub async fn update(
+        &self,
+        user_id: &str,
+        update_request: &UpdateRequest,
+    ) -> Result<SqliteQueryResult, sqlx::Error> {
         let result = sqlx::query(
             r#"
                 UPDATE users
-                SET display_name = ?, password_hash = ?, avatar_url = ?
+                SET display_name = ?, avatar_url = ?
                 WHERE user_id = ?
                 "#,
         )
-        .bind(&user_record.display_name)
-        .bind(&user_record.password_hash)
-        .bind(&user_record.avatar_url)
-        .bind(&user_record.user_id)
+        .bind(&update_request.display_name)
+        .bind(&update_request.avatar_url)
+        .bind(user_id)
         .execute(&self.sqlite_pool)
         .await?;
 

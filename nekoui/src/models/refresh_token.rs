@@ -7,3 +7,9 @@ pub struct RefreshTokenRecord {
     pub revoked: bool,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
+
+#[derive()]
+pub struct Tokens {
+    pub access_key: String,
+    pub refresh_key: String,
+}

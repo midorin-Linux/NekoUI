@@ -1,6 +1,8 @@
-use crate::repositories::sqlite::SqliteRepository;
+use std::sync::Arc;
+
+use crate::services::Services;
 
 #[derive(Clone)]
 pub struct ServerState {
-    pub sqlite_repo: SqliteRepository,
+    pub services: Arc<Services>,
 }

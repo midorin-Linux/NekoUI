@@ -1,5 +1,5 @@
 use std::process::ExitCode;
-
+use std::sync::Arc;
 use anyhow::{Result, bail};
 use clap::{ArgMatches, Command};
 use dialoguer::{Input, theme::SimpleTheme};
@@ -11,6 +11,7 @@ use nekoui::{
     wizard::{config_exists, run_setup_wizard},
 };
 use tracing::{error, info, warn};
+use nekoui::services::Services;
 
 fn cli() -> Command {
     Command::new("neko")
@@ -124,7 +125,11 @@ impl StartCommand {
         };
         print_log(State::Ok, "Connected to database");
 
-        let server_state = ServerState { sqlite_repo };
+        info!("initializing services");
+        let services = Arc::new(Services::new(&sqlite_repo).await);
+        print_log(State::Ok, "Services initialized");
+
+        let server_state = ServerState { services };
 
         info!("initializing HTTP/WebSocket API server");
         let server = nekoui::api::HttpServer::new(config.server, server_state);
