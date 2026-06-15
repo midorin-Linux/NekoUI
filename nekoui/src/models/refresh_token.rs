@@ -9,7 +9,7 @@ pub struct RefreshTokenRecord {
 }
 
 #[derive()]
-pub struct Tokens {
+pub struct TokenPair {
     pub access_key: String,
     pub refresh_key: String,
 }

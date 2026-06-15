@@ -5,6 +5,8 @@ use axum::{
 };
 use serde::Serialize;
 
+use crate::error::ApiErrorDetail;
+
 #[derive(Debug, Serialize)]
 pub struct ApiResponse<T> {
     pub success: bool,
@@ -12,12 +14,6 @@ pub struct ApiResponse<T> {
     pub error: Option<ApiErrorDetail>,
     #[serde(skip)]
     pub status: StatusCode,
-}
-
-#[derive(Debug, Serialize)]
-pub struct ApiErrorDetail {
-    pub code: String,
-    pub message: String,
 }
 
 impl<T> ApiResponse<T> {
@@ -49,27 +45,5 @@ where
 {
     fn into_response(self) -> Response {
         (self.status, Json(self)).into_response()
-    }
-}
-
-#[derive(Debug)]
-pub struct AppError {
-    pub status: StatusCode,
-    pub code: String,
-    pub message: String,
-}
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        ApiResponse::<()>::error(self.status, &self.code, &self.message).into_response()
-    }
-}
-
-impl From<anyhow::Error> for AppError {
-    fn from(err: anyhow::Error) -> Self {
-        Self {
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-            code: "INTERNAL_SERVER_ERROR".to_string(),
-            message: err.to_string(),
-        }
     }
 }

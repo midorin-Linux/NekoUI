@@ -57,15 +57,18 @@ impl AuthService {
         }
     }
 
-    pub async fn login(&self, login_request: &LoginRequest) -> Result<RefreshTokenRecord, AuthError> {
+    pub async fn login(
+        &self,
+        login_request: &LoginRequest,
+    ) -> Result<RefreshTokenRecord, AuthError> {
         let user = self
             .user_repo
             .get_by_email(&login_request.email)
             .await?
             .ok_or(AuthError::UserNotFound)?;
 
-        let hashed_password = argon2_hash(&login_request.password)
-            .map_err(|_| AuthError::FailedToHashPassword)?;
+        let hashed_password =
+            argon2_hash(&login_request.password).map_err(|_| AuthError::FailedToHashPassword)?;
 
         if user.password_hash != hashed_password {
             return Err(AuthError::PasswordIncorrect);

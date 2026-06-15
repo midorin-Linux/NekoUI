@@ -4,6 +4,7 @@ use anyhow::{Context, Result, bail};
 use config::{Config as ConfigBuilder, File};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
+
 use crate::utils::secret_key::SecretKey;
 
 #[cfg(debug_assertions)]
