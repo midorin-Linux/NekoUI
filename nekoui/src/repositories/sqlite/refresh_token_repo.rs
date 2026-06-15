@@ -14,12 +14,16 @@ impl RefreshToken {
         Self { sqlite_pool }
     }
 
-    pub async fn generate(&self, user_id: &str) -> Result<Option<RefreshTokenRecord>, sqlx::Error> {
+    pub async fn generate(
+        &self,
+        user_id: &str,
+    ) -> Result<Option<(String, RefreshTokenRecord)>, sqlx::Error> {
         let mut token_bytes = vec![0u8; 32];
         rand::fill(&mut token_bytes)
             .map_err(|_| anyhow::anyhow!("failed to generate random bytes"))
             .expect("failed to generate random bytes");
 
+        let raw_token = hex::encode(&token_bytes);
         let hash = aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, &token_bytes);
         let token_hash = hex::encode(hash.as_ref());
 
@@ -40,7 +44,7 @@ impl RefreshToken {
         .fetch_optional(&self.sqlite_pool)
         .await?;
 
-        Ok(result)
+        Ok(result.map(|record| (raw_token, record)))
     }
 
     pub async fn get(&self, user_id: &str) -> Result<Option<RefreshTokenRecord>, sqlx::Error> {

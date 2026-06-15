@@ -126,12 +126,13 @@ impl StartCommand {
         print_log(State::Ok, "Connected to database");
 
         info!("initializing services");
-        let services = Arc::new(Services::new(&sqlite_repo).await);
+        let jwt_secret = Arc::new(config.server.jwt_secret.as_ref().to_string().clone());
+        let services = Arc::new(Services::new(&sqlite_repo, jwt_secret.clone()).await);
         print_log(State::Ok, "Services initialized");
 
         let server_state = ServerState {
             services,
-            jwt_secret: Arc::new(config.server.jwt_secret.as_ref().to_string().clone()),
+            jwt_secret,
         };
 
         info!("initializing HTTP/WebSocket API server");
