@@ -3,6 +3,7 @@ use axum::{
     extract::{Extension, Json, State},
     response::IntoResponse,
     routing::{get, post},
+    middleware
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,11 +25,6 @@ pub struct RegisterResponse {
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
-}
-
-#[derive(Debug, Serialize)]
-struct LoginResponse {
-    refresh_token: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,34 +49,20 @@ async fn register(
     State(state): State<ServerState>,
     Json(register_request): Json<RegisterRequest>,
 ) -> impl IntoResponse {
-    let _user_record = if let Err(err) = state
-        .services
-        .auth_service()
-        .await
-        .register(&register_request)
-        .await
-    {
-        ApiResponse::error(err.status_code(), err.code(), err.to_string())
-    } else {
-        ApiResponse::success(())
-    };
+    match state.services.auth_service().await.register(&register_request).await {
+        Ok(user_record) => ApiResponse::success(user_record),
+        Err(err) => ApiResponse::error(err.status_code(), err.code(), err.to_string()),
+    }
 }
 
 async fn login(
     State(state): State<ServerState>,
     Json(login_request): Json<LoginRequest>,
 ) -> impl IntoResponse {
-    let _token = if let Err(err) = state
-        .services
-        .auth_service()
-        .await
-        .login(&login_request)
-        .await
-    {
-        ApiResponse::error(err.status_code(), err.code(), err.to_string())
-    } else {
-        ApiResponse::success(())
-    };
+    match state.services.auth_service().await.login(&login_request).await {
+        Ok(token_pair) => ApiResponse::success(token_pair),
+        Err(err) => ApiResponse::error(err.status_code(), err.code(), err.to_string()),
+    }
 }
 
 async fn refresh(

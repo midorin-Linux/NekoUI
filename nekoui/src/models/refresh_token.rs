@@ -1,3 +1,5 @@
+use serde::Serialize;
+
 #[derive(Clone, Debug, sqlx::FromRow)]
 pub struct RefreshTokenRecord {
     pub id: u64,
@@ -8,7 +10,7 @@ pub struct RefreshTokenRecord {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive()]
+#[derive(Serialize)]
 pub struct TokenPair {
     pub access_key: String,
     pub refresh_key: String,
