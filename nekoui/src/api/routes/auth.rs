@@ -3,9 +3,8 @@ use axum::{
     extract::{Extension, Json, State},
     response::IntoResponse,
     routing::{get, post},
-    middleware
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{api::response::ApiResponse, state::ServerState, utils::jwt::JwtClaims};
 
@@ -25,6 +24,11 @@ pub struct RegisterResponse {
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RefreshRequest {
+    pub refresh_token: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -66,29 +70,38 @@ async fn login(
 }
 
 async fn refresh(
-    State(_state): State<ServerState>,
-    Extension(claims): Extension<JwtClaims>,
+    State(state): State<ServerState>,
+    Json(refresh_request): Json<RefreshRequest>,
 ) -> impl IntoResponse {
-    ApiResponse::success(())
+    match state
+        .services
+        .auth_service()
+        .await
+        .refresh(&refresh_request.refresh_token)
+        .await
+    {
+        Ok(token_pair) => ApiResponse::success(token_pair),
+        Err(err) => ApiResponse::error(err.status_code(), err.code(), err.to_string()),
+    }
 }
 
 async fn logout(
     State(_state): State<ServerState>,
-    Extension(claims): Extension<JwtClaims>,
+    Extension(_claims): Extension<JwtClaims>,
 ) -> impl IntoResponse {
     ApiResponse::success(())
 }
 
 async fn get_profile(
     State(_state): State<ServerState>,
-    Extension(claims): Extension<JwtClaims>,
+    Extension(_claims): Extension<JwtClaims>,
 ) -> impl IntoResponse {
     ApiResponse::success(())
 }
 
 async fn patch_profile(
     State(_state): State<ServerState>,
-    Extension(claims): Extension<JwtClaims>,
+    Extension(_claims): Extension<JwtClaims>,
 ) -> impl IntoResponse {
     ApiResponse::success(())
 }

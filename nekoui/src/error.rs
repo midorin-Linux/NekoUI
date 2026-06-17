@@ -19,6 +19,8 @@ pub enum AuthError {
     FailedToCreateUser,
     #[error("failed to generate refresh token")]
     FailedToGenerateRefreshToken,
+    #[error("invalid or expired refresh token")]
+    InvalidRefreshToken,
     #[error(transparent)]
     Database(#[from] sqlx::Error),
 }
@@ -33,6 +35,7 @@ impl AuthError {
             | Self::FailedToGenerateRefreshToken
             | Self::FailedToCreateUser
             | Self::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::InvalidRefreshToken => StatusCode::UNAUTHORIZED,
         }
     }
 
@@ -44,6 +47,7 @@ impl AuthError {
             Self::FailedToHashPassword => "FAILED_TO_HASH_PASSWORD",
             Self::FailedToCreateUser => "FAILED_TO_CREATE_USER",
             Self::FailedToGenerateRefreshToken => "FAILED_TO_GENERATE_REFRESH_TOKEN",
+            Self::InvalidRefreshToken => "INVALID_REFRESH_TOKEN",
             Self::Database(_) => "DATABASE_ERROR",
         }
     }

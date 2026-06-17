@@ -66,7 +66,7 @@ impl TokenService {
             .refresh_token_repo
             .validate(&token_hash)
             .await?
-            .ok_or(AuthError::FailedToGenerateRefreshToken)?;
+            .ok_or(AuthError::InvalidRefreshToken)?;
 
         let user_id = old_record.user_id.clone();
 
@@ -101,7 +101,7 @@ impl TokenService {
         self.refresh_token_repo
             .validate(&token_hash)
             .await?
-            .ok_or(AuthError::FailedToGenerateRefreshToken)?;
+            .ok_or(AuthError::InvalidRefreshToken)?;
 
         self.refresh_token_repo
             .revoke(&token_hash)
