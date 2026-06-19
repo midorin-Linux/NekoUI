@@ -1,12 +1,17 @@
 use axum::{
     Router,
     extract::{Extension, Json, State},
+    middleware,
     response::IntoResponse,
     routing::{get, post},
 };
 use serde::Deserialize;
 
-use crate::{api::response::ApiResponse, state::ServerState, utils::jwt::JwtClaims};
+use crate::{
+    api::{middleware::auth::auth_middleware, response::ApiResponse},
+    state::ServerState,
+    utils::jwt::JwtClaims,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterRequest {
@@ -37,15 +42,16 @@ pub struct UpdateRequest {
     pub avatar_url: Option<String>,
 }
 
-pub fn router() -> Router<ServerState> {
+pub fn router(state: ServerState) -> Router<ServerState> {
     let protected = Router::new()
-        .route("/refresh", post(refresh))
         .route("/logout", post(logout))
-        .route("/me", get(get_profile).patch(patch_profile));
+        .route("/me", get(get_profile).patch(patch_profile))
+        .route_layer(middleware::from_fn_with_state(state, auth_middleware));
 
     Router::<ServerState>::new()
         .route("/register", post(register))
         .route("/login", post(login))
+        .route("/refresh", post(refresh))
         .merge(protected)
 }
 
@@ -53,7 +59,13 @@ async fn register(
     State(state): State<ServerState>,
     Json(register_request): Json<RegisterRequest>,
 ) -> impl IntoResponse {
-    match state.services.auth_service().await.register(&register_request).await {
+    match state
+        .services
+        .auth_service()
+        .await
+        .register(&register_request)
+        .await
+    {
         Ok(user_record) => ApiResponse::success(user_record),
         Err(err) => ApiResponse::error(err.status_code(), err.code(), err.to_string()),
     }
@@ -63,7 +75,13 @@ async fn login(
     State(state): State<ServerState>,
     Json(login_request): Json<LoginRequest>,
 ) -> impl IntoResponse {
-    match state.services.auth_service().await.login(&login_request).await {
+    match state
+        .services
+        .auth_service()
+        .await
+        .login(&login_request)
+        .await
+    {
         Ok(token_pair) => ApiResponse::success(token_pair),
         Err(err) => ApiResponse::error(err.status_code(), err.code(), err.to_string()),
     }

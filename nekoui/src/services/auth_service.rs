@@ -11,7 +11,7 @@ use crate::{
         user::{UserRecord, UserRecordRequest},
     },
     repositories::sqlite::{refresh_token_repo::RefreshToken, user_repo::User},
-    utils::crypto::argon2_hash,
+    utils::crypto::{argon2_hash, argon2_valid},
 };
 
 pub struct AuthService {
@@ -74,10 +74,7 @@ impl AuthService {
             .await?
             .ok_or(AuthError::UserNotFound)?;
 
-        let hashed_password =
-            argon2_hash(&login_request.password).map_err(|_| AuthError::FailedToHashPassword)?;
-
-        if user.password_hash != hashed_password {
+        if argon2_valid(&login_request.password, &user.password_hash).is_err() {
             return Err(AuthError::PasswordIncorrect);
         }
 

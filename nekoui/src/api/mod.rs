@@ -24,7 +24,7 @@ impl HttpServer {
         let addr: std::net::SocketAddr =
             format!("127.0.0.1:{}", self.server_config.bind_address).parse()?;
 
-        let routes = router::build_routes();
+        let routes = router::build_routes(self.server_state.clone());
 
         let cors = build_cors_layer(&self.server_config.allowed_origins);
 

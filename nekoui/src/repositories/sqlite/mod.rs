@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use sqlx::{Pool, Sqlite, sqlite::SqlitePoolOptions};
 
@@ -23,7 +22,11 @@ pub struct SqliteRepository {
 
 impl SqliteRepository {
     pub async fn new(database_url: &str) -> anyhow::Result<Self> {
-        let sqlite_path = PathBuf::from(DATABASE_PATH).join(database_url).to_str().unwrap().to_string();
+        let sqlite_path = PathBuf::from(DATABASE_PATH)
+            .join(database_url)
+            .to_str()
+            .unwrap()
+            .to_string();
 
         let sqlite_pool = SqlitePoolOptions::new()
             .acquire_timeout(std::time::Duration::from_secs(5))
